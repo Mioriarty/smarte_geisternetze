@@ -1,3 +1,4 @@
+import multiprocessing
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -44,10 +45,13 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting ):
     np_chan2 = np_chan2 if np_chan2.shape[0] < np_chan2.shape[1] else np_chan2.T
 
     if do_bottom_detection:
+        NUM_PROCESSES = 8
+
         # bottom detect
         print("Determine bottom size...")
-        bottom_pos1 = [ detect_bottom(np_chan1[:,i], False) for i in range(np_chan1.shape[1]) ]
-        bottom_pos2 = [ detect_bottom(np_chan2[:,i], True)  for i in range(np_chan2.shape[1]) ]
+        with multiprocessing.Pool(processes = NUM_PROCESSES) as pool:
+            bottom_pos1 = pool.starmap(detect_bottom, [(np_chan1[:,i], False) for i in range(np_chan1.shape[1])])
+            bottom_pos2 = pool.starmap(detect_bottom, [(np_chan2[:,i], True)  for i in range(np_chan2.shape[1])])   
 
         print("Blur bottom sizes...")
         bottom_pos1 = blur(bottom_pos1)
@@ -118,4 +122,4 @@ def should_discard_slice(slice):
     
 
 if __name__ == '__main__':
-    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', '2019apr04_ecker_sued_10002.png', True, True)
+    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', '2019apr04_ecker_sued_10002.png', True, False)
