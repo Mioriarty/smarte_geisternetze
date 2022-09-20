@@ -3,12 +3,11 @@ import matplotlib.pyplot as plt
 import cv2
 from pyxtf import xtf_read, concatenate_channel, XTFHeaderType
 
-def xtf2png(xtfPath, pngPath):
+def xtf2png(xtfPath, pngPath, do_bottom_detection ):
     # Read file header and packets
     (fh, p) = xtf_read(xtfPath)
 
-    print('The following (supported) packets are present (XTFHeaderType:count): \n\t' +
-        str([key.name + ':{}'.format(len(v)) for key, v in p.items()]))
+    print("Reading xtf data...")
 
     # Get multibeam/bathy data (xyza) if present
     if XTFHeaderType.bathy_xyza in p:
@@ -44,18 +43,51 @@ def xtf2png(xtfPath, pngPath):
     np_chan1 = np_chan1 if np_chan1.shape[0] < np_chan1.shape[1] else np_chan1.T
     np_chan2 = np_chan2 if np_chan2.shape[0] < np_chan2.shape[1] else np_chan2.T
 
-    # The following plots the waterfall-view in separate subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1)
-    ax1.imshow(np_chan1, cmap='gray', vmin=0, vmax=np.log10(upper_limit))
-    ax2.imshow(np_chan2, cmap='gray', vmin=0, vmax=np.log10(upper_limit))
-    fig.tight_layout()
+    if do_bottom_detection:
+        # bottom detect
+        print("Determine bottom size...")
+        bottom_pos1 = [ detect_bottom(np_chan1[:,i], False) for i in range(np_chan1.shape[1]) ]
+        bottom_pos2 = [ detect_bottom(np_chan2[:,i], True)  for i in range(np_chan2.shape[1]) ]
 
+        print("Blur bottom sizes...")
+        bottom_pos1 = blur(bottom_pos1)
+        bottom_pos2 = blur(bottom_pos2)
+
+        print("Write bottom to image...")
+        for i in range(np_chan1.shape[1]):
+            np_chan1[bottom_pos1[i]:,i] = np.zeros(np_chan1.shape[0] - bottom_pos1[i])
+            np_chan2[:bottom_pos2[i],i] = np.zeros(bottom_pos2[i])
+
+
+    print("Create image...")
     # glue together
     glued_chan = np.vstack((np_chan1, np_chan2))
 
     # create img
     glued_chan /= np.amax(glued_chan) / 255
+
     cv2.imwrite(pngPath, glued_chan)
 
+def blur(values):
+    return [values[0], values[1]] + [ int((values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]) / 5) for i in range(2, len(values)-2)] + [values[-2], values[-1]]
+
+
+def detect_bottom(values, reverse):
+    BOTTOM_THRESHHOLD = 3.1
+    
+    if reverse:
+        values = values[::-1]
+
+    for i in range(2, len(values)-2):
+        blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
+        if blurred_val < BOTTOM_THRESHHOLD * 5:
+            if len(values) * 0.9 < i or values[int(i + len(values) * 0.1)] < BOTTOM_THRESHHOLD:
+                return len(values) - i if reverse else i
+    return len(values)
+
+
+
+    
+
 if __name__ == '__main__':
-    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', '2019apr04_ecker_sued_10002.png')
+    xtf2png('res\\2020may29_0001.xtf', '2020may29_0001.png', True)
