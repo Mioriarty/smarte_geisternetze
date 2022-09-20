@@ -71,7 +71,6 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting ):
             slice2 = np_chan2[:,i*SLICE_WIDTH:(i+1)*SLICE_WIDTH]
             filename = pngPath[:-4] + "_" + str(i * SLICE_WIDTH)
             
-            print(filename)
             if not should_discard_slice(slice1):
                 cv2.imwrite(filename + "_top.png", slice1)
             
@@ -107,16 +106,13 @@ def detect_bottom(values, reverse):
 def should_discard_slice(slice):
     nonzero = slice[slice != 0]
 
-    # to much black (more than 60%)
-    if nonzero.size < slice.size * 0.4:
+    # to much black (more than 75%)
+    if nonzero.size < slice.size * 0.25:
         return True
     
     # no black at all (cannot be real data, bottom missing)
     if nonzero.size > slice.size * 0.96:
         return True
-    
-    value_range = np.amax(nonzero) - np.amin(nonzero)
-    print(value_range)
     
     return False
     
