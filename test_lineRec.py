@@ -35,7 +35,7 @@ edges1 = cv2.Canny(blur_gray, low_threshold1, high_threshold1)
 cv2.imshow("edges1", edges1)
 
 low_threshold2 = 50
-high_threshold2 = 400
+high_threshold2 = 700
 edges2 = cv2.Canny(blur_gray, low_threshold2, high_threshold2)
 cv2.imshow("edges2", edges2)
 
