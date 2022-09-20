@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import cv2
 from pyxtf import xtf_read, concatenate_channel, XTFHeaderType
 
-def xtf2png(xtfPath, pngPath, do_bottom_detection ):
+def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting ):
     # Read file header and packets
     (fh, p) = xtf_read(xtfPath)
 
@@ -59,18 +59,36 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection ):
             np_chan2[:bottom_pos2[i],i] = np.zeros(bottom_pos2[i])
 
 
-    print("Create image...")
-    # glue together
-    glued_chan = np.vstack((np_chan1, np_chan2))
+    np_chan1 /= np.amax(np_chan1) / 255
+    np_chan2 /= np.amax(np_chan2) / 255
 
-    # create img
-    glued_chan /= np.amax(glued_chan) / 255
+    if do_cutting:
+        SLICE_WIDTH = 450
+        print("Create slices...")
 
-    cv2.imwrite(pngPath, glued_chan)
+        for i in range(np_chan1.shape[1] // SLICE_WIDTH):
+            slice1 = np_chan1[:,i*SLICE_WIDTH:(i+1)*SLICE_WIDTH]
+            slice2 = np_chan2[:,i*SLICE_WIDTH:(i+1)*SLICE_WIDTH]
+            filename = pngPath[:-4] + "_" + str(i * SLICE_WIDTH)
+            
+            print(filename)
+            if not should_discard_slice(slice1):
+                cv2.imwrite(filename + "_top.png", slice1)
+            
+            if not should_discard_slice(slice2):
+                cv2.imwrite(filename + "_bot.png", slice2)
+
+
+    else:
+        print("Create image...")
+        # create img
+        # glue together
+        glued_chan = np.vstack((np_chan1, np_chan2))
+        
+        cv2.imwrite(pngPath, glued_chan)
 
 def blur(values):
     return [values[0], values[1]] + [ int((values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]) / 5) for i in range(2, len(values)-2)] + [values[-2], values[-1]]
-
 
 def detect_bottom(values, reverse):
     BOTTOM_THRESHHOLD = 3.1
@@ -86,8 +104,22 @@ def detect_bottom(values, reverse):
     return len(values)
 
 
+def should_discard_slice(slice):
+    nonzero = slice[slice != 0]
 
+    # to much black (more than 60%)
+    if nonzero.size < slice.size * 0.4:
+        return True
+    
+    # no black at all (cannot be real data, bottom missing)
+    if nonzero.size > slice.size * 0.96:
+        return True
+    
+    value_range = np.amax(nonzero) - np.amin(nonzero)
+    print(value_range)
+    
+    return False
     
 
 if __name__ == '__main__':
-    xtf2png('res\\2020may29_0001.xtf', '2020may29_0001.png', True)
+    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', '2019apr04_ecker_sued_10002.png', True, True)
