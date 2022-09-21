@@ -50,8 +50,8 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting ):
         # bottom detect
         print("Determine bottom size...")
         with multiprocessing.Pool(processes = NUM_PROCESSES) as pool:
-            bottom_pos1 = pool.starmap(detect_bottom, [(np_chan1[:,i], False) for i in range(np_chan1.shape[1])])
-            bottom_pos2 = pool.starmap(detect_bottom, [(np_chan2[:,i], True)  for i in range(np_chan2.shape[1])])   
+            bottom_pos1 = pool.map(detect_bottom, [np_chan1[:,i]for i in range(np_chan1.shape[1])])
+            bottom_pos2 = pool.map(detect_bottom_reversed, [np_chan2[:,i] for i in range(np_chan2.shape[1])])   
 
         print("Blur bottom sizes...")
         bottom_pos1 = blur(bottom_pos1)
@@ -93,19 +93,31 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting ):
 def blur(values):
     return [values[0], values[1]] + [ int((values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]) / 5) for i in range(2, len(values)-2)] + [values[-2], values[-1]]
 
-def detect_bottom(values, reverse):
+def detect_bottom(values):
     BOTTOM_THRESHHOLD = 3.1
-    
-    if reverse:
-        values = values[::-1]
+    RECHECK_JUMP = int(len(values) * 0.1)
+    NO_RECHECK_ZONE = len(values) - RECHECK_JUMP - 1
 
     for i in range(2, len(values)-2):
         blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
         if blurred_val < BOTTOM_THRESHHOLD * 5:
-            if len(values) * 0.9 < i or values[int(i + len(values) * 0.1)] < BOTTOM_THRESHHOLD:
-                return len(values) - i if reverse else i
+            if NO_RECHECK_ZONE < i or values[i + RECHECK_JUMP] < BOTTOM_THRESHHOLD:
+                return i
+        
     return len(values)
 
+def detect_bottom_reversed(values):
+    BOTTOM_THRESHHOLD = 3.1
+    RECHECK_JUMP = int(len(values) * 0.1)
+    NO_RECHECK_ZONE = RECHECK_JUMP
+
+
+    for i in range(len(values)-3, 1, -1):
+        blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
+        if blurred_val < BOTTOM_THRESHHOLD * 5:
+            if NO_RECHECK_ZONE > i or values[i - RECHECK_JUMP] < BOTTOM_THRESHHOLD:
+                return i
+    return 0
 
 def should_discard_slice(slice):
     nonzero = slice[slice != 0]
