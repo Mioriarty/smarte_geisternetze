@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import cv2
 from pyxtf import xtf_read, concatenate_channel, XTFHeaderType
 
-def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_threshhold = 3.1, processes = 8, slice_width = 450 ):
+def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_threshhold = 3.1, bottom_detection_safety_offset = 30, processes = 8, slice_width = 450 ):
     # Read file header and packets
     print("Reading xtf data...")
     (fh, p) = xtf_read(xtfPath)
@@ -31,8 +31,8 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_
         # bottom detect
         print("Determine bottom size...")
         with multiprocessing.Pool(processes = processes) as pool:
-            bottom_pos1 = pool.starmap(detect_bottom, [ (np_chan1[:,i], bottom_detection_threshhold) for i in range(np_chan1.shape[1]) ])
-            bottom_pos2 = pool.starmap(detect_bottom_reversed, [ (np_chan2[:,i], bottom_detection_threshhold) for i in range(np_chan2.shape[1]) ])   
+            bottom_pos1 = pool.starmap(detect_bottom, [ (np_chan1[:,i], bottom_detection_threshhold, bottom_detection_safety_offset) for i in range(np_chan1.shape[1]) ])
+            bottom_pos2 = pool.starmap(detect_bottom_reversed, [ (np_chan2[:,i], bottom_detection_threshhold, bottom_detection_safety_offset) for i in range(np_chan2.shape[1]) ])   
 
         print("Blur bottom sizes...")
         bottom_pos1 = blur(blur(bottom_pos1))
@@ -76,7 +76,7 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_
 def blur(values):
     return [values[0], values[1]] + [ int((values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]) / 5) for i in range(2, len(values)-2)] + [values[-2], values[-1]]
 
-def detect_bottom(values, threshhold):
+def detect_bottom(values, threshhold, safety_offset):
     value_length = len(values)
     recheck_jump = int(value_length * 0.1)
 
@@ -84,12 +84,12 @@ def detect_bottom(values, threshhold):
         if values[i] < threshhold:
             if i + recheck_jump >= value_length or values[i + recheck_jump] < threshhold:
                 if i + 2*recheck_jump >= value_length or values[i + 2*recheck_jump] < threshhold:
-                    return max(i - 30, 0)
+                    return max(i - safety_offset, 0)
 
         
     return value_length
 
-def detect_bottom_reversed(values, threshhold):
+def detect_bottom_reversed(values, threshhold, safety_offset):
     value_length = len(values)
     recheck_jump = int(value_length * 0.1)
 
@@ -98,7 +98,7 @@ def detect_bottom_reversed(values, threshhold):
         if values[i] < threshhold:
             if i - recheck_jump < 0 or values[i - recheck_jump] < threshhold:
                 if i - 2*recheck_jump < 0 or values[i - 2*recheck_jump] < threshhold:
-                    return min(i + 30, value_length - 1)
+                    return min(i + safety_offset, value_length - 1)
 
     return 0
 
