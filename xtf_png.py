@@ -74,27 +74,37 @@ def blur(values):
     return [values[0], values[1]] + [ int((values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]) / 5) for i in range(2, len(values)-2)] + [values[-2], values[-1]]
 
 def detect_bottom(values, threshhold):
-    RECHECK_JUMP = int(len(values) * 0.1)
-    NO_RECHECK_ZONE = len(values) - RECHECK_JUMP - 1
+    value_length = len(values)
+    recheck_jump = int(value_length * 0.1)
 
-    for i in range(2, len(values)-2):
-        blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
-        if blurred_val < threshhold * 5:
-            if NO_RECHECK_ZONE < i or values[i + RECHECK_JUMP] < threshhold:
-                return i
+    for i in range(int(value_length * 0.2), value_length):
+        # blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
+        # if blurred_val < threshhold * 5:
+        #     if NO_RECHECK_ZONE < i or values[i + RECHECK_JUMP] < threshhold:
+        #         return i
+        if values[i] < threshhold:
+            if i + recheck_jump >= value_length or values[i + recheck_jump] < threshhold:
+                if i + 2*recheck_jump >= value_length or values[i + 2*recheck_jump] < threshhold:
+                    return i
+
         
-    return len(values)
+    return value_length
 
 def detect_bottom_reversed(values, threshhold):
-    RECHECK_JUMP = int(len(values) * 0.1)
-    NO_RECHECK_ZONE = RECHECK_JUMP
+    value_length = len(values)
+    recheck_jump = int(value_length * 0.1)
 
 
-    for i in range(len(values)-3, 1, -1):
-        blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
-        if blurred_val < threshhold * 5:
-            if NO_RECHECK_ZONE > i or values[i - RECHECK_JUMP] < threshhold:
-                return i
+    for i in range(int(value_length * 0.8), 0, -1):
+        # blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
+        # if blurred_val < threshhold * 5:
+        #     if NO_RECHECK_ZONE > i or values[i - RECHECK_JUMP] < threshhold:
+        #         return i
+        if values[i] < threshhold:
+            if i - recheck_jump < 0 or values[i - recheck_jump] < threshhold:
+                if i - 2*recheck_jump < 0 or values[i - 2*recheck_jump] < threshhold:
+                    return i
+
     return 0
 
 def should_discard_slice(slice):
