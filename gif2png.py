@@ -10,7 +10,7 @@ def saveImgFromDir2png(url):
         filterame,exts = os.path.splitext(filename)
         print ("Processing: " + imageFile,filterame)
         im = Image.open(imageFile)
-        im.save( './res/'+filterame+'.png','PNG')
+        im.save( './res/training_gif_and_png'+filterame+'.png','PNG')
 
 if __name__ == '__main__':
-    saveImgFromDir2png("./res/")
+    saveImgFromDir2png("./res/training_gif_and_png")
