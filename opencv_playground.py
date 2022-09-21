@@ -37,7 +37,8 @@ def resize(image):
 def detectEdgesAndDisplay(imgGray, cl1):
     # Canny Edge Detection
     grayEdges = cv2.Canny(image=imgGray, threshold1=30, threshold2=200)
-    cl1Edges = cv2.Canny(image=cl1, threshold1=75, threshold2=225) # Canny Edge Detection
+    # Canny Edge Detection good values for unedited images th1=75 th2=225
+    cl1Edges = cv2.Canny(image=cl1, threshold1=75, threshold2=225)
 
     cl1Edges = cv2.morphologyEx(cl1Edges, cv2.MORPH_CLOSE, kernel=np.ones((2,2), np.uint8))
     cl1Edges = cv2.dilate(cl1Edges, kernel=np.ones((3,3), np.uint8), iterations=1)
