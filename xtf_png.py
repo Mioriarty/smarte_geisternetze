@@ -38,10 +38,12 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_
         bottom_pos1 = blur(blur(bottom_pos1))
         bottom_pos2 = blur(blur(bottom_pos2))
 
-        print("Write bottom to image...")
+        print("Write bottom to mask...")
+        mask1 = np.full(np_chan1.shape, 255)
+        mask2 = np.full(np_chan2.shape, 255)
         for i in range(np_chan1.shape[1]):
-            np_chan1[bottom_pos1[i]:,i] = np.zeros(np_chan1.shape[0] - bottom_pos1[i])
-            np_chan2[:bottom_pos2[i],i] = np.zeros(bottom_pos2[i])
+            mask1[bottom_pos1[i]:,i] = np.zeros(np_chan1.shape[0] - bottom_pos1[i])
+            mask2[:bottom_pos2[i],i] = np.zeros(bottom_pos2[i])
 
 
     np_chan1 /= np.amax(np_chan1) / 255
@@ -49,26 +51,27 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_
 
     if do_cutting:
         print("Create slices...")
+        slice_image(np_chan1, pngPath[:-4], "_top", slice_width, False)
+        slice_image(np_chan2, pngPath[:-4], "_bot", slice_width, False)
 
-        for i in range(np_chan1.shape[1] // slice_width):
-            slice1 = np_chan1[:,i*slice_width:(i+1)*slice_width]
-            slice2 = np_chan2[:,i*slice_width:(i+1)*slice_width]
-            filename = pngPath[:-4] + "_" + str(i * slice_width)
-            
-            if not do_bottom_detection or not should_discard_slice(slice1):
-                cv2.imwrite(filename + "_top.png", slice1)
-            
-            if not do_bottom_detection or not should_discard_slice(slice2):
-                cv2.imwrite(filename + "_bot.png", slice2)
+        if do_bottom_detection:
+            slice_image(mask1, pngPath[:-4], "_top_mask", slice_width, False)
+            slice_image(mask2, pngPath[:-4], "_bot_mask", slice_width, False)
+        
 
 
     else:
         print("Create image...")
         # create img
         # glue together
+
         glued_chan = np.vstack((np_chan1, np_chan2))
-        
         cv2.imwrite(pngPath, glued_chan)
+
+        if do_bottom_detection:
+            glued_mask = np.vstack((mask1, mask2))
+            cv2.imwrite(pngPath[:-4] + "_" + "mask" + ".png", glued_mask)
+
 
 def blur(values):
     return [values[0], values[1]] + [ int((values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]) / 5) for i in range(2, len(values)-2)] + [values[-2], values[-1]]
@@ -99,6 +102,15 @@ def detect_bottom_reversed(values, threshhold):
 
     return 0
 
+
+def slice_image(image, filename, suffix, slice_width, discard_check):
+    for i in range(image.shape[1] // slice_width):
+        slice = image[:,i*slice_width:(i+1)*slice_width]
+        this_filename = filename + "_" + str(i * slice_width) + suffix + ".png"
+        
+        if not discard_check or not should_discard_slice(slice):
+            cv2.imwrite(this_filename, slice)
+
 def should_discard_slice(slice):
     nonzero = slice[slice != 0]
 
@@ -114,4 +126,4 @@ def should_discard_slice(slice):
     
 
 if __name__ == '__main__':
-    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', '2019apr04_ecker_sued_10002.png', False, True)
+    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', 'out\\2019apr04_ecker_sued_10002.png', True, True)
