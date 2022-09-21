@@ -4,8 +4,10 @@ import numpy as np
 from PIL import Image
 from matplotlib import image
 
-def imgFiltering(url):
+def imgFiltering(url, maskUrl):
     img = cv2.imread(url)
+    imgMask = cv2.imread(maskUrl)
+    imgMask = cv2.cvtColor(imgMask, cv2.COLOR_BGR2GRAY)
     imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     hist = hist=cv2.calcHist(imgGray,[0],None,[256],[0,256])
@@ -13,9 +15,10 @@ def imgFiltering(url):
     cl1 = clahe.apply(imgGray)
 
     imgGray = resize(imgGray)
+    imgMask = resize(imgMask)
     cl1 = resize(cl1)
 
-    images = detectEdgesAndDisplay(imgGray, cl1)
+    images = detectEdgesAndDisplay(imgGray, imgMask, cl1)
     display("gray - equalized - edges gray - edges equalized", images)
 
     # blurredImages = blurAndDisplay(imgGray, cl1)
@@ -34,11 +37,15 @@ def resize(image):
     dim = (width, height)
     return cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
 
-def detectEdgesAndDisplay(imgGray, cl1):
-    # Canny Edge Detection
-    grayEdges = cv2.Canny(image=imgGray, threshold1=30, threshold2=200)
+def detectEdgesAndDisplay(imgGray, imgMask, cl1):
     # Canny Edge Detection good values for unedited images th1=75 th2=225
     cl1Edges = cv2.Canny(image=imgGray, threshold1=40, threshold2=50)
+
+    cl1Edges = cv2.bitwise_and(cl1Edges, cl1Edges, mask=imgMask)
+
+    cv2.imshow("contours", np.concatenate((imgGray, cl1Edges),axis=1))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     cl1Edges = cv2.morphologyEx(cl1Edges, cv2.MORPH_CLOSE, kernel=np.ones((2,2), np.uint8))
     cl1Edges = cv2.dilate(cl1Edges, kernel=np.ones((3,3), np.uint8), iterations=1)
@@ -55,7 +62,7 @@ def detectEdgesAndDisplay(imgGray, cl1):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    return np.concatenate((imgGray, cl1, grayEdges, cl1Edges),axis=1)
+    return np.concatenate((imgGray, cl1, imgMask, cl1Edges),axis=1)
 
 def isContourLine(contour):
     hull = cv2.convexHull(contour)
@@ -81,4 +88,5 @@ def blurAndDisplay(imgGray, cl1):
 
 
 if __name__ == '__main__':
-    imgFiltering("./res/cutted_images/edited/2019apr04_ecker_sued_10002_5400_bot_blur.png")
+    imgFiltering("./res/cutted_images/edited/2019apr04_ecker_sued_10002_5400_bot_blur.png", 
+                 "./res/cutted_images/unedited/2019apr04_ecker_sued_10002_5400_bot_mask.png")

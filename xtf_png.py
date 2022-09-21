@@ -84,7 +84,7 @@ def detect_bottom(values, threshhold):
         if values[i] < threshhold:
             if i + recheck_jump >= value_length or values[i + recheck_jump] < threshhold:
                 if i + 2*recheck_jump >= value_length or values[i + 2*recheck_jump] < threshhold:
-                    return i
+                    return max(i - 30, 0)
 
         
     return value_length
@@ -98,7 +98,7 @@ def detect_bottom_reversed(values, threshhold):
         if values[i] < threshhold:
             if i - recheck_jump < 0 or values[i - recheck_jump] < threshhold:
                 if i - 2*recheck_jump < 0 or values[i - 2*recheck_jump] < threshhold:
-                    return i
+                    return min(i + 30, value_length - 1)
 
     return 0
 
@@ -126,4 +126,4 @@ def should_discard_slice(slice):
     
 
 if __name__ == '__main__':
-    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', 'out\\2019apr04_ecker_sued_10002.png', True, True)
+    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', 'res\\cutted_images\\unedited\\2019apr04_ecker_sued_10002.png', True, True)
