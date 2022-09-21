@@ -55,10 +55,10 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_
             slice2 = np_chan2[:,i*slice_width:(i+1)*slice_width]
             filename = pngPath[:-4] + "_" + str(i * slice_width)
             
-            if not should_discard_slice(slice1):
+            if not do_bottom_detection or not should_discard_slice(slice1):
                 cv2.imwrite(filename + "_top.png", slice1)
             
-            if not should_discard_slice(slice2):
+            if not do_bottom_detection or not should_discard_slice(slice2):
                 cv2.imwrite(filename + "_bot.png", slice2)
 
 
@@ -114,4 +114,4 @@ def should_discard_slice(slice):
     
 
 if __name__ == '__main__':
-    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', '2019apr04_ecker_sued_10002.png', True, False)
+    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', '2019apr04_ecker_sued_10002.png', False, True)
