@@ -4,27 +4,10 @@ import matplotlib.pyplot as plt
 import cv2
 from pyxtf import xtf_read, concatenate_channel, XTFHeaderType
 
-def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting ):
+def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_threshhold = 3.1, processes = 8, slice_width = 450 ):
     # Read file header and packets
-    (fh, p) = xtf_read(xtfPath)
-
     print("Reading xtf data...")
-
-    # Get multibeam/bathy data (xyza) if present
-    if XTFHeaderType.bathy_xyza in p:
-        np_mb = [[y.fDepth for y in x.data] for x in p[XTFHeaderType.bathy_xyza]]
-
-        # Allocate room (with padding in case of varying sizes)
-        mb_concat = np.full((len(np_mb), max([len(x) for x in np_mb])), dtype=np.float32, fill_value=np.nan)
-        for i, line in enumerate(np_mb):
-            mb_concat[i, :len(line)] = line
-
-        # Transpose if the longest axis is vertical
-        is_horizontal = mb_concat.shape[0] < mb_concat.shape[1]
-        mb_concat = mb_concat if is_horizontal else mb_concat.T
-        plt.figure()
-        plt.imshow(mb_concat, cmap='hot')
-        plt.colorbar(orientation='horizontal')
+    (fh, p) = xtf_read(xtfPath)
 
     # Get sonar if present
     upper_limit = 2 ** 16
@@ -45,13 +28,11 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting ):
     np_chan2 = np_chan2 if np_chan2.shape[0] < np_chan2.shape[1] else np_chan2.T
 
     if do_bottom_detection:
-        NUM_PROCESSES = 8
-
         # bottom detect
         print("Determine bottom size...")
-        with multiprocessing.Pool(processes = NUM_PROCESSES) as pool:
-            bottom_pos1 = pool.map(detect_bottom, [np_chan1[:,i]for i in range(np_chan1.shape[1])])
-            bottom_pos2 = pool.map(detect_bottom_reversed, [np_chan2[:,i] for i in range(np_chan2.shape[1])])   
+        with multiprocessing.Pool(processes = processes) as pool:
+            bottom_pos1 = pool.starmap(detect_bottom, [ (np_chan1[:,i], bottom_detection_threshhold) for i in range(np_chan1.shape[1]) ])
+            bottom_pos2 = pool.starmap(detect_bottom_reversed, [ (np_chan2[:,i], bottom_detection_threshhold) for i in range(np_chan2.shape[1]) ])   
 
         print("Blur bottom sizes...")
         bottom_pos1 = blur(bottom_pos1)
@@ -67,13 +48,12 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting ):
     np_chan2 /= np.amax(np_chan2) / 255
 
     if do_cutting:
-        SLICE_WIDTH = 450
         print("Create slices...")
 
-        for i in range(np_chan1.shape[1] // SLICE_WIDTH):
-            slice1 = np_chan1[:,i*SLICE_WIDTH:(i+1)*SLICE_WIDTH]
-            slice2 = np_chan2[:,i*SLICE_WIDTH:(i+1)*SLICE_WIDTH]
-            filename = pngPath[:-4] + "_" + str(i * SLICE_WIDTH)
+        for i in range(np_chan1.shape[1] // slice_width):
+            slice1 = np_chan1[:,i*slice_width:(i+1)*slice_width]
+            slice2 = np_chan2[:,i*slice_width:(i+1)*slice_width]
+            filename = pngPath[:-4] + "_" + str(i * slice_width)
             
             if not should_discard_slice(slice1):
                 cv2.imwrite(filename + "_top.png", slice1)
@@ -93,29 +73,27 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting ):
 def blur(values):
     return [values[0], values[1]] + [ int((values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]) / 5) for i in range(2, len(values)-2)] + [values[-2], values[-1]]
 
-def detect_bottom(values):
-    BOTTOM_THRESHHOLD = 3.1
+def detect_bottom(values, threshhold):
     RECHECK_JUMP = int(len(values) * 0.1)
     NO_RECHECK_ZONE = len(values) - RECHECK_JUMP - 1
 
     for i in range(2, len(values)-2):
         blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
-        if blurred_val < BOTTOM_THRESHHOLD * 5:
-            if NO_RECHECK_ZONE < i or values[i + RECHECK_JUMP] < BOTTOM_THRESHHOLD:
+        if blurred_val < threshhold * 5:
+            if NO_RECHECK_ZONE < i or values[i + RECHECK_JUMP] < threshhold:
                 return i
         
     return len(values)
 
-def detect_bottom_reversed(values):
-    BOTTOM_THRESHHOLD = 3.1
+def detect_bottom_reversed(values, threshhold):
     RECHECK_JUMP = int(len(values) * 0.1)
     NO_RECHECK_ZONE = RECHECK_JUMP
 
 
     for i in range(len(values)-3, 1, -1):
         blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
-        if blurred_val < BOTTOM_THRESHHOLD * 5:
-            if NO_RECHECK_ZONE > i or values[i - RECHECK_JUMP] < BOTTOM_THRESHHOLD:
+        if blurred_val < threshhold * 5:
+            if NO_RECHECK_ZONE > i or values[i - RECHECK_JUMP] < threshhold:
                 return i
     return 0
 
