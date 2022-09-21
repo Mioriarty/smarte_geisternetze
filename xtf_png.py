@@ -35,8 +35,8 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_
             bottom_pos2 = pool.starmap(detect_bottom_reversed, [ (np_chan2[:,i], bottom_detection_threshhold) for i in range(np_chan2.shape[1]) ])   
 
         print("Blur bottom sizes...")
-        bottom_pos1 = blur(bottom_pos1)
-        bottom_pos2 = blur(bottom_pos2)
+        bottom_pos1 = blur(blur(bottom_pos1))
+        bottom_pos2 = blur(blur(bottom_pos2))
 
         print("Write bottom to image...")
         for i in range(np_chan1.shape[1]):
@@ -78,10 +78,6 @@ def detect_bottom(values, threshhold):
     recheck_jump = int(value_length * 0.1)
 
     for i in range(int(value_length * 0.2), value_length):
-        # blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
-        # if blurred_val < threshhold * 5:
-        #     if NO_RECHECK_ZONE < i or values[i + RECHECK_JUMP] < threshhold:
-        #         return i
         if values[i] < threshhold:
             if i + recheck_jump >= value_length or values[i + recheck_jump] < threshhold:
                 if i + 2*recheck_jump >= value_length or values[i + 2*recheck_jump] < threshhold:
@@ -96,10 +92,6 @@ def detect_bottom_reversed(values, threshhold):
 
 
     for i in range(int(value_length * 0.8), 0, -1):
-        # blurred_val = values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]
-        # if blurred_val < threshhold * 5:
-        #     if NO_RECHECK_ZONE > i or values[i - RECHECK_JUMP] < threshhold:
-        #         return i
         if values[i] < threshhold:
             if i - recheck_jump < 0 or values[i - recheck_jump] < threshhold:
                 if i - 2*recheck_jump < 0 or values[i - 2*recheck_jump] < threshhold:
