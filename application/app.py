@@ -40,8 +40,11 @@ def start_processing():
     runningThread.start()
     start_process.configure(state='disabled')
 
-def press_enter(event = None):
-    pass
+
+def press_enter(event=None):
+    if start_process.cget('state') == 'normal':
+        start_processing()
+
 
 def processing(start_process_button):
     if not os.path.isdir('application\\out'):
