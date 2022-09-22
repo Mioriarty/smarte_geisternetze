@@ -1,17 +1,20 @@
+from enum import auto
 import os
 from tkinter import *
 from tkinter import filedialog
+from tkinter.ttk import Style
+from types import NoneType
 import xtf_png
 from opencv_playground import loopOverImages
 from findingProcessor import processFindings
-
+from PIL import ImageTk, Image
+import threading
 files_selected = []
-isRunning = False
+runningThread = None
 
 
 def browseFiles():
     global files_selected
-    global count_files_selected
 
     filenames = filedialog.askopenfilenames(initialdir="/",
                                             title="Select a .xtf File",
@@ -33,22 +36,36 @@ def build_label_text():
 
 
 def start_processing():
-    global isRunning
+    runningThread = threading.Thread(target=processing, args=(start_process,))
+    runningThread.start()
+    start_process.configure(state='disabled')
 
-    if not isRunning:
-        if not os.path.isdir('application\\out'):
-            os.mkdir(path='application\\out')
-        isRunning = True
-        for file in files_selected:
-            foldername = file.split('/')[-1].split('.')[0]
-            os.mkdir(path='application\\' + foldername)
-            slice_name = 'application\\' + foldername + '\\' + foldername + '.png'
-            xtf_png.xtf2png(file, slice_name, True, True)
+def press_enter(event = None):
+    pass
 
-            findings = loopOverImages('application\\' + foldername + '\\')
-            processFindings(findings, file, 'application\\out')
+def processing(start_process_button):
+    if not os.path.isdir('application\\out'):
+        os.mkdir(path='application\\out')
+    if not os.path.isdir('application\\temp'):
+        os.mkdir(path='application\\temp')
 
-    isRunning = False
+    for file in files_selected:
+        foldername = file.split('/')[-1].split('.')[0]
+        out_folder_loc = 'application\\out\\' + foldername
+        temp_folder_loc = 'application\\temp\\' + foldername
+
+        if not os.path.isdir(out_folder_loc):
+            os.mkdir(path=out_folder_loc)
+        if not os.path.isdir(temp_folder_loc):
+            os.mkdir(path=temp_folder_loc)
+
+        slice_name = temp_folder_loc + '\\' + foldername + '.png'
+        xtf_png.xtf2png(file, slice_name, True, True)
+
+        findings = loopOverImages(
+            temp_folder_loc + '\\')
+        processFindings(findings, file, out_folder_loc)
+    start_process_button.configure(state='normal')
 
 
 def delete_selection():
@@ -58,31 +75,39 @@ def delete_selection():
     start_process.configure(state='disabled')
     build_label_text()
 
+
 if __name__ == '__main__':
     root = Tk()
     root.title('Geisternetz Finder')
-    root.geometry("500x250")
-    root.resizable(False, False) 
+    root.geometry("539x360")
+    root.resizable(False, False)
     root.configure(background='darkturquoise')
-    find_files = Button(root, text="Browse Files", command=browseFiles)
-    find_files.grid(column=1, row=1, sticky='w')
+    bg_img = Image.open('application\\bg.png')
+    bg = ImageTk.PhotoImage(bg_img)
+    label = Label(root, image=bg)
+    label.place(x=0, y=0)
+    find_files = Button(root, text="Browse Files",
+                        command=browseFiles, height=2, bg='#567', fg='White')
+    find_files.grid(column=1, row=1, sticky='w', padx=10, pady=10)
 
-    start_process = Button(root, text="Analyze",
-                        command=start_processing, state='disabled')
-    start_process.grid(column=3, row=1)
+    photo = ImageTk.PhotoImage(Image.open('application\\net.png'))
+
+    start_process = Button(root, text="Find",
+                           command=start_processing, bg="green", fg='White', height=2, width=10, state='disabled')
+    start_process.grid(column=3, row=1, padx=10, sticky='w')
+    root.bind('<Return>', press_enter)
 
     delete_button = Button(root, text='Delete Selection',
-                        comman=delete_selection, bg="red")
-    delete_button.grid(column=2, row=1)
+                           comman=delete_selection, bg="red", fg='White', height=2)
+    delete_button.grid(column=2, row=1, pady=10)
 
     selected_files_label = Label(root,
-                                text="",
-                                width=0, height=4,
-                                fg="blue",
-                                anchor='w',
-                                justify=LEFT)
-
+                                 text="",
+                                 width=0, height=4,
+                                 fg="blue",
+                                 anchor='w',
+                                 justify=CENTER)
     build_label_text()
-    selected_files_label.grid(column=1, row=4, sticky='w')
+    selected_files_label.grid(columnspan=3, row=2, padx=10, sticky='w')
 
     mainloop()
