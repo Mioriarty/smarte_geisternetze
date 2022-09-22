@@ -9,6 +9,8 @@ def convert_coords(longitude,latitude,layback,heading):
     EAST = []
     ZONE = []
     LETTER = []
+    LON_lag = []
+    LAT_lag = []
 
     UTM = [ utm.from_latlon(la, lo) for la,lo in zip(latitude,longitude)  ]
     UTM = np.asarray(UTM)
@@ -23,8 +25,12 @@ def convert_coords(longitude,latitude,layback,heading):
     NORTH_lag = [no - l*math.cos(h) for l,h,no in zip(layback,heading,NORTH)]
 
     Deg_lag = [ utm.to_latlon(ea,no,z,l) for ea,no,z,l in zip(EAST_lag,NORTH_lag, UTM_zone, UTM_letter)]
+    Deg_lag = np.asarray(Deg_lag)
+    Deg_lag = np.array(Deg_lag.tolist())
+    LON_lag = np.append(LON_lag, Deg_lag[:,0])
+    LAT_lag = np.append(LAT_lag, Deg_lag[:,1])
 
-    return NORTH_lag,EAST_lag, Deg_lag
+    return LAT_lag, LON_lag
 
 
     
