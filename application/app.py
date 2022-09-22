@@ -35,15 +35,12 @@ def build_label_text():
 
 
 def start_processing():
-    global runningThread
-
-    if runningThread == None or runningThread.is_alive():
-        runningThread = threading.Thread(target=processing)
-        runningThread.start()
-        start_process.configure(state='disabled')
+    runningThread = threading.Thread(target=processing, args=(start_process,))
+    runningThread.start()
+    start_process.configure(state='disabled')
 
 
-def processing():
+def processing(start_process_button):
     if not os.path.isdir('application\\out'):
         os.mkdir(path='application\\out')
     if not os.path.isdir('application\\temp'):
@@ -65,7 +62,7 @@ def processing():
         findings = loopOverImages(
             temp_folder_loc + '\\')
         processFindings(findings, file, out_folder_loc)
-    start_process.configure(state='normal')
+    start_process_button.configure(state='normal')
 
 
 def delete_selection():
