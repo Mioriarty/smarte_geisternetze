@@ -6,7 +6,7 @@ from tkinter.ttk import Style
 import xtf_png
 from opencv_playground import loopOverImages
 from findingProcessor import processFindings
-
+from PIL import ImageTk, Image 
 files_selected = []
 isRunning = False
 
@@ -63,18 +63,24 @@ def delete_selection():
 if __name__ == '__main__':
     root = Tk()
     root.title('Geisternetz Finder')
-    root.geometry("500x250")
+    root.geometry("539x360")
     root.resizable(False, False) 
     root.configure(background='darkturquoise')
-    find_files = Button(root, text="Browse Files", command=browseFiles)
+    bg_img =Image.open('application\\bg.png')
+    bg = ImageTk.PhotoImage(bg_img)
+    label = Label(root, image=bg)
+    label.place(x = 0,y = 0)
+    find_files = Button(root, text="Browse Files", command=browseFiles,height = 2,bg='#567',fg='White')
     find_files.grid(column=1, row=1, sticky='w', padx=10,pady=10)
 
-    start_process = Button(root, text="Analyze",
-                        command=start_processing, state='disabled')
+    photo = ImageTk.PhotoImage(Image.open('application\\net.png'))
+
+    start_process = Button(root, text="Find",
+                        command=start_processing,bg="green",fg='White',height = 2,width=10,state='disabled')
     start_process.grid(column=3, row=1,padx = 10,sticky='w')
 
     delete_button = Button(root, text='Delete Selection',
-                        comman=delete_selection, bg="red")
+                        comman=delete_selection, bg="red",fg='White',height = 2)
     delete_button.grid(column=2, row=1,pady = 10)
 
     selected_files_label = Label(root,
