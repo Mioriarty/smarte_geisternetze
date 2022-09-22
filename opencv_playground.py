@@ -8,9 +8,7 @@ def imgFiltering(url, maskUrl):
     img = cv2.imread(url)
     imgMask = cv2.imread(maskUrl)
     imgMask = cv2.cvtColor(imgMask, cv2.COLOR_BGR2GRAY)
-    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    
+    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)    
 
     hist = cv2.calcHist(imgGray,[0],None,[256],[0,256])
     clahe = cv2.createCLAHE(clipLimit = 1)
