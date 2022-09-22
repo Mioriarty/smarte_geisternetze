@@ -2,7 +2,7 @@ import os
 from tkinter import *
 from tkinter import filedialog
 import xtf_png
-import findingProcessor
+# äimport findingProcessor
 
 files_selected = []
 isRunning = False
@@ -45,8 +45,7 @@ def start_processing():
             xtf_png.xtf2png(file, slice_name, False, True)
 
             findings = []
-            findingProcessor.processFindings(
-                findings, file, 'application\\out')
+            #findingProcessor.processFindings(findings, file, 'application\\out')
 
     isRunning = False
 
@@ -55,6 +54,7 @@ def delete_selection():
     global files_selected
 
     files_selected = []
+    start_process.configure(state='disabled')
     build_label_text()
 
 
@@ -68,10 +68,11 @@ find_files.grid(column=1, row=1, sticky='w')
 
 start_process = Button(root, text="Analyze",
                        command=start_processing, state='disabled')
-start_process.grid(column=2, row=1)
+start_process.grid(column=1, row=3)
 
-delete_button = Button(root, text='Delete Selection', command=delete_selection)
-delete_button.grid(column=3, row=1, sticky='e')
+delete_button = Button(root, text='Delete Selection',
+                       command=delete_selection, bg="red")
+delete_button.grid(column=1, row=2)
 
 selected_files_label = Label(root,
                              text="",
@@ -80,6 +81,6 @@ selected_files_label = Label(root,
                              anchor='w',
                              justify=LEFT)
 build_label_text()
-selected_files_label.grid(column=1, row=2, sticky='w')
+selected_files_label.grid(column=1, row=4, sticky='w')
 
 mainloop()
