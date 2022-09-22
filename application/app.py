@@ -7,8 +7,9 @@ import xtf_png
 from opencv_playground import loopOverImages
 from findingProcessor import processFindings
 from PIL import ImageTk, Image
+import threading
 files_selected = []
-isRunning = False
+runningThread = None
 
 
 def browseFiles():
@@ -34,34 +35,36 @@ def build_label_text():
 
 
 def start_processing():
-    global isRunning
+    global runningThread
 
-    if not isRunning:
-        isRunning = True
+    if runningThread == None or runningThread.is_alive():
+        runningThread = threading.Thread(target=processing)
+        start_process.configure(state='disabled')
 
-        if not os.path.isdir('application\\out'):
-            os.mkdir(path='application\\out')
-        if not os.path.isdir('application\\temp'):
-            os.mkdir(path='application\\temp')
 
-        for file in files_selected:
-            foldername = file.split('/')[-1].split('.')[0]
-            out_folder_loc = 'application\\out\\' + foldername
-            temp_folder_loc = 'application\\temp\\' + foldername
+def processing():
+    if not os.path.isdir('application\\out'):
+        os.mkdir(path='application\\out')
+    if not os.path.isdir('application\\temp'):
+        os.mkdir(path='application\\temp')
 
-            if not os.path.isdir(out_folder_loc):
-                os.mkdir(path=out_folder_loc)
-            if not os.path.isdir(temp_folder_loc):
-                os.mkdir(path=temp_folder_loc)
+    for file in files_selected:
+        foldername = file.split('/')[-1].split('.')[0]
+        out_folder_loc = 'application\\out\\' + foldername
+        temp_folder_loc = 'application\\temp\\' + foldername
 
-            slice_name = temp_folder_loc + '\\' + foldername + '.png'
-            xtf_png.xtf2png(file, slice_name, True, True)
+        if not os.path.isdir(out_folder_loc):
+            os.mkdir(path=out_folder_loc)
+        if not os.path.isdir(temp_folder_loc):
+            os.mkdir(path=temp_folder_loc)
 
-            findings = loopOverImages(
-                temp_folder_loc + '\\')
-            processFindings(findings, file, out_folder_loc)
+        slice_name = temp_folder_loc + '\\' + foldername + '.png'
+        xtf_png.xtf2png(file, slice_name, True, True)
 
-    isRunning = False
+        findings = loopOverImages(
+            temp_folder_loc + '\\')
+        processFindings(findings, file, out_folder_loc)
+    start_process.configure(state='normal')
 
 
 def delete_selection():
