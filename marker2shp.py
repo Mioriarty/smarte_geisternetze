@@ -6,45 +6,61 @@ from shapely.geometry import Point
 import pandas as pd
 
 file = xml.dom.minidom.parse("/Volumes/RAKSHA/ORCC/SH/20190404ecker sued 1/marker.xml")
-print(file.nodeName)
-print(file.firstChild.tagName)
-
-
-file = xml.dom.minidom.parse("/Volumes/RAKSHA/ORCC/SH/20190404ecker sued 1/marker.xml")
-print(file.nodeName)
-print(file.firstChild.tagName)
+#print(file.nodeName)
+#print(file.firstChild.tagName)
 
 Lon = file.getElementsByTagName("LongitudeDegrees")
 Lat = file.getElementsByTagName("LatitudeDegrees")
 Name = file.getElementsByTagName("Name")
+Time = file.getElementsByTagName("RealTime")
+Ping = file.getElementsByTagName("SonarElementIndex")
+File = file.getElementsByTagName("Filename")
+Channel = file.getElementsByTagName("SonarChannel")
+Desc = file.getElementsByTagName("Description")
 
 LON = []
 LAT = []
 NAME = []
+TIME = []
+PING = []
+FILE = []
+CHANNEL = []
+DESC = []
+
+# List comprehension
+#for i in Lon:
+#    #print(i.firstChild.nodeValue)
+#    LON = pd.DataFrame(np.append(LON,float(i.firstChild.nodeValue)))
 
 
-for i in Lon:
-    #print(i.firstChild.nodeValue)
-    LON = pd.DataFrame(np.append(LON,float(i.firstChild.nodeValue)))
-    
-for j in Lat:
-    LAT = pd.DataFrame(np.append(LAT,float(j.firstChild.nodeValue)))
-    #print(j.firstChild.nodeValue)
-    
-for k in Name:
-    NAME = pd.DataFrame(np.append(NAME,k.firstChild.nodeValue))
 
-df = np.c_[NAME,LON,LAT]
+LON = [ np.append(LON,float(el.firstChild.nodeValue)) for el in Lon]
+LAT = [ np.append(LAT,float(el.firstChild.nodeValue)) for el in Lat]
+NAME = [ np.append(NAME,el.firstChild.nodeValue) for el in Name]
+TIME = [ np.append(TIME,float(el.firstChild.nodeValue)) for el in Time]
+PING = [ np.append(PING,int(el.firstChild.nodeValue)) for el in Ping]
+FILE = [ np.append(FILE,el.firstChild.nodeValue) for el in File]
+CHANNEL = [ np.append(CHANNEL,int(el.firstChild.nodeValue)) for el in Channel]
+DESC = [ np.append(DESC,el.firstChild.nodeValue) for el in Desc]
+
+#print(type(Lon))
+
+df = np.c_[NAME,LON,LAT,TIME,PING,FILE,CHANNEL,DESC]
 df = pd.DataFrame(df)
 
-df.columns = ['Name', 'Lon', 'Lat']
-
-print((df))
+# add column names
+df.columns = ['Name', 'Long', 'Lati','Time','Ping','File','Channel','Desc']
 
 # combine lat and lon column to a shapely Point() object
-df['geometry'] = df.apply(lambda x: Point((float(x.Lon), float(x.Lat))), axis=1)
+df['geometry'] = df.apply(lambda x: Point((float(x.Long), float(x.Lati))), axis=1)
 
-df.crs= "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+# convert to geo DF
 df = gpd.GeoDataFrame(df, geometry='geometry')
 
-df.to_file('/Volumes/RAKSHA/ORCC/SH/20190404ecker sued 1/marker.shp', driver='ESRI Shapefile')
+# set coordinate system
+gdf = df.set_crs(4326, allow_override=True)
+print(gdf.crs)
+
+# write to shapefile
+gdf.to_file('/Volumes/RAKSHA/ORCC/SH/20190404ecker sued 1/marker.shp', driver='ESRI Shapefile')
+
