@@ -31,12 +31,19 @@ def build_label_text():
 
 
 def start_processing():
+    global isRunning
+
     if not isRunning:
+        if os.path.isdir('application\\out'):
+            os.mkdir(path='application\\out')
+        isRunning = True
         for file in files_selected:
-            foldername = 'application\\' + file.split('/')[-1].split('.')[0]
-            os.mkdir(path=foldername)
-            slice_name = foldername + '\\' + foldername + '.png'
-            xtf_png.xtf2png(file, slice_name, True, True)
+            foldername = file.split('/')[-1].split('.')[0]
+            os.mkdir(path='application\\' + foldername)
+            slice_name = 'application\\' + foldername + '\\' + foldername + '.png'
+            xtf_png.xtf2png(file, slice_name, False, True)
+
+    isRunning = False
 
 
 root = Tk()
