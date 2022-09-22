@@ -42,29 +42,28 @@ def imgFiltering(url, maskUrl):
 
     image, contours = detectEdgesAndDisplay(imgMask, cl1NlMeanDN)
 
-    finding = getFinding(contours, url, scaleFactor)
+    findings = getFinding(contours, url, scaleFactor)
 
-    singlePixel = np.zeros(image.shape)
+    singlePixel = np.zeros(image.shape, dtype=np.uint8)
 
-    if finding != None:
+    for finding in findings:
         cv2.circle(singlePixel, (finding.pixelCoord[0], finding.pixelCoord[1]), 15, 255, 4)
     
     display(url[30:], np.concatenate((imgGray, cl1, image, singlePixel), axis=1))
-    print(np.amax(np.concatenate((imgGray, cl1, image), axis=1)))
 
-    return finding
+    return findings
 
 def getFinding(contours, url, scaleFactor):
-    finding = None
+    findings = []
 
-    if len(contours) > 0:
-        middle, _ = cv2.minEnclosingCircle(contours[0])
+    for contour in contours:
+        middle, _ = cv2.minEnclosingCircle(contour)
 
         xCord = int(middle[0] / scaleFactor)
         yCord = int(middle[1] / scaleFactor)
-        finding = Finding.fromFileName((xCord, yCord), url)
+        findings.append(Finding.fromFileName((xCord, yCord), url))
 
-    return finding
+    return findings
 
 def display(windowName, images):
     cv2.imshow(windowName, images)
