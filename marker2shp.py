@@ -4,6 +4,8 @@ import geopandas as gpd
 import shapely as shp
 from shapely.geometry import Point
 import pandas as pd
+import utm
+import math
 
 file = xml.dom.minidom.parse("/Volumes/RAKSHA/ORCC/SH/20190404ecker sued 1/marker.xml")
 #print(file.nodeName)
@@ -59,8 +61,11 @@ df = gpd.GeoDataFrame(df, geometry='geometry')
 
 # set coordinate system
 gdf = df.set_crs(4326, allow_override=True)
-print(gdf.crs)
+#print(gdf.crs)
 
 # write to shapefile
 gdf.to_file('/Volumes/RAKSHA/ORCC/SH/20190404ecker sued 1/marker.shp', driver='ESRI Shapefile')
 
+geo_df = gdf.to_crs({'init': 'epsg:32633'})
+
+#print(geo_df)
