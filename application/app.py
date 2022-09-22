@@ -39,6 +39,7 @@ def start_processing():
 
     if runningThread == None or runningThread.is_alive():
         runningThread = threading.Thread(target=processing)
+        runningThread.start()
         start_process.configure(state='disabled')
 
 
