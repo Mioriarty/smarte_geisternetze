@@ -2,9 +2,9 @@ import os
 from tkinter import *
 from tkinter import filedialog
 import xtf_png
+import findingProcessor
 
 files_selected = []
-count_files_selected = 0
 isRunning = False
 
 
@@ -18,12 +18,13 @@ def browseFiles():
                                                         "*.xtf")])
     files_selected += filenames
     files_selected = list(dict.fromkeys(files_selected))
-    count_files_selected = len(files_selected)
+    if len(files_selected) != 0:
+        start_process.configure(state="normal")
     build_label_text()
 
 
 def build_label_text():
-    selected_files_text = str(count_files_selected) + " files selected: "
+    selected_files_text = str(len(files_selected)) + " files selected: "
     for fileloc in files_selected:
         filename = fileloc.split('/')[-1]
         selected_files_text = selected_files_text + "\n" + filename
@@ -34,7 +35,7 @@ def start_processing():
     global isRunning
 
     if not isRunning:
-        if os.path.isdir('application\\out'):
+        if not os.path.isdir('application\\out'):
             os.mkdir(path='application\\out')
         isRunning = True
         for file in files_selected:
@@ -43,7 +44,18 @@ def start_processing():
             slice_name = 'application\\' + foldername + '\\' + foldername + '.png'
             xtf_png.xtf2png(file, slice_name, False, True)
 
+            findings = []
+            findingProcessor.processFindings(
+                findings, file, 'application\\out')
+
     isRunning = False
+
+
+def delete_selection():
+    global files_selected
+
+    files_selected = []
+    build_label_text()
 
 
 root = Tk()
@@ -54,16 +66,20 @@ root.resizable(False, False)
 find_files = Button(root, text="Browse Files", command=browseFiles)
 find_files.grid(column=1, row=1, sticky='w')
 
-start_process = Button(root, text="Analyze", command=start_processing)
-start_process.grid(column=1, row=2, sticky='w')
+start_process = Button(root, text="Analyze",
+                       command=start_processing, state='disabled')
+start_process.grid(column=2, row=1)
+
+delete_button = Button(root, text='Delete Selection', command=delete_selection)
+delete_button.grid(column=3, row=1, sticky='e')
 
 selected_files_label = Label(root,
                              text="",
-                             width=100, height=4,
+                             width=0, height=4,
                              fg="blue",
                              anchor='w',
                              justify=LEFT)
 build_label_text()
-selected_files_label.grid(column=1, row=3, sticky='nw')
+selected_files_label.grid(column=1, row=2, sticky='w')
 
 mainloop()
