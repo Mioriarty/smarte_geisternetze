@@ -3,18 +3,21 @@ import glob
 import cv2
 import numpy as np
 import multiprocessing
-import Finding
+from Finding import Finding
 
 def loopOverImages(dir):
+    print(dir)
+
     processes = 8
     sonarTopImgs = glob.glob("{}*top.png".format(dir))
     sonarBotImgs = glob.glob("{}*bot.png".format(dir))
 
+    print("Starting filtering...")
     with multiprocessing.Pool(processes = processes) as pool:
             findingsTop = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarTopImgs ])
             findingsBot = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarBotImgs ])  
 
-    findings = findingsBot + findingsTop
+    findings = [finding for finding in findingsBot + findingsTop if finding != None ]
 
     return findings
 

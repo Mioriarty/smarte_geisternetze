@@ -45,7 +45,7 @@ def start_processing():
             slice_name = 'application\\' + foldername + '\\' + foldername + '.png'
             xtf_png.xtf2png(file, slice_name, True, True)
 
-            findings = loopOverImages('application\\' + foldername)
+            findings = loopOverImages('application\\' + foldername + '\\')
             processFindings(findings, file, 'application\\out')
 
     isRunning = False
@@ -81,7 +81,8 @@ if __name__ == '__main__':
                                 fg="blue",
                                 anchor='w',
                                 justify=LEFT)
-build_label_text()
-selected_files_label.grid(column=1, row=4, sticky='w')
 
-mainloop()
+    build_label_text()
+    selected_files_label.grid(column=1, row=4, sticky='w')
+
+    mainloop()
