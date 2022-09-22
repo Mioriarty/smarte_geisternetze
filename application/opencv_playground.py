@@ -3,8 +3,7 @@ import glob
 import cv2
 import numpy as np
 import multiprocessing
-
-from Finding import Finding
+import Finding
 
 def loopOverImages(dir):
     processes = 8
