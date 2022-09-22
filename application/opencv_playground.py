@@ -18,6 +18,8 @@ def loopOverImages(dir):
             findingsTop = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarTopImgs ])
             findingsBot = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarBotImgs ])  
 
+    findingsTop = sum(findingsTop, [])
+    findingsBot = sum(findingsBot, [])
     findings = [finding for finding in findingsBot + findingsTop if finding != None ]
 
     print(["{} - {}".format(i , finding) for i, finding in enumerate(findings)])
@@ -47,9 +49,10 @@ def imgFiltering(url, maskUrl):
     singlePixel = np.zeros(image.shape, dtype=np.uint8)
 
     for finding in findings:
-        cv2.circle(singlePixel, (finding.pixelCoord[0], finding.pixelCoord[1]), 15, 255, 4)
+        cv2.circle(singlePixel, (int(finding.pixelCoord[0] * scaleFactor), int(finding.pixelCoord[1] * scaleFactor)), 15, 255, 4)
     
-    display(url[30:], np.concatenate((imgGray, cl1, image, singlePixel), axis=1))
+    if len(findings) > 0: 
+        display(str(findings[0].pixelCoord) + url[30:], np.concatenate((imgGray, cl1, image, singlePixel), axis=1))
 
     return findings
 
@@ -90,7 +93,7 @@ def detectEdgesAndDisplay(imgMask, cl1):
         if(isContourLine(contours[i])):
             cv2.drawContours(contourImage, contours, i, (255, 255, 255), 2, cv2.LINE_4, hierachy, 0)
 
-    return contourImage, contours
+    return contourImage, [c for c in contours if isContourLine(c)]
 
 def isContourLine(contour):
     hull = cv2.convexHull(contour)

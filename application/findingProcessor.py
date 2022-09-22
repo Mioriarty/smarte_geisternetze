@@ -7,7 +7,7 @@ import numpy as np
 import imageio
 from Finding import Finding
     
-def processFindings(findings, xtfPath, outputDirectory, gifSize = 200):
+def processFindings(findings, xtfPath, outputDirectory, gifSize = 600):
     (fh, p) = pyxtf.xtf_read(xtfPath)
 
     # temp whole img
