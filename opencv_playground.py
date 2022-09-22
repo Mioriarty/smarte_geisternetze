@@ -1,3 +1,4 @@
+from concurrent.futures import process
 import glob
 import cv2
 import numpy as np
@@ -6,12 +7,17 @@ import multiprocessing
 from Finding import Finding
 
 def loopOverImages(dir):
+    processes = 8
     sonarTopImgs = glob.glob("{}*top.png".format(dir))
     sonarBotImgs = glob.glob("{}*bot.png".format(dir))
 
-    for i in range(len(sonarTopImgs)):
-        imgFiltering(sonarTopImgs[i], glob.glob("{}_mask.png".format(sonarTopImgs[i][: - 4]))[0])
-        imgFiltering(sonarBotImgs[i], glob.glob("{}_mask.png".format(sonarBotImgs[i][: - 4]))[0])
+    with multiprocessing.Pool(processes = processes) as pool:
+            findingsTop = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarTopImgs ])
+            findingsBot = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarBotImgs ])  
+
+    findings = findingsBot + findingsTop
+
+    return findings
 
 def imgFiltering(url, maskUrl):
     img = cv2.imread(url)
@@ -29,15 +35,16 @@ def imgFiltering(url, maskUrl):
 
     image = detectEdgesAndDisplay(imgMask, cl1NlMeanDN)
 
-    isRelevant(image, url)
+    return getFinding(image, url)
 
-def isRelevant(image, url):
+def getFinding(image, url):
     whitePixels = cv2.findNonZero(image)
     if whitePixels is None:
         return
     
-    print(whitePixels[0][0])
-    # Finding.fromFileName(whitePixel, url)
+    finding = Finding.fromFileName(whitePixels[0][0], url)
+
+    return finding
 
 def display(windowName, images):
     cv2.imshow(windowName, images)
@@ -91,6 +98,6 @@ def blurAndDisplay(imgGray, cl1):
 
 
 if __name__ == '__main__':
-    loopOverImages("./res/cutted_images/unedited/")
+    print(len(loopOverImages("./res/cutted_images/unedited/")))
     # imgFiltering("./res/cutted_images/unedited/2019apr04_ecker_sued_10002_16650_bot.png", 
     #              "./res/cutted_images/unedited/2019apr04_ecker_sued_10002_16650_bot_mask.png")
