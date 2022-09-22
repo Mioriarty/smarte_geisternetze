@@ -10,7 +10,9 @@ def imgFiltering(url, maskUrl):
     imgMask = cv2.cvtColor(imgMask, cv2.COLOR_BGR2GRAY)
     imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    hist = hist=cv2.calcHist(imgGray,[0],None,[256],[0,256])
+    
+
+    hist = cv2.calcHist(imgGray,[0],None,[256],[0,256])
     clahe = cv2.createCLAHE(clipLimit = 1)
     cl1 = clahe.apply(imgGray)
 
@@ -18,11 +20,11 @@ def imgFiltering(url, maskUrl):
     imgMask = resize(imgMask)
     cl1 = resize(cl1)
 
-    images = detectEdgesAndDisplay(imgGray, imgMask, cl1)
-    display("gray - equalized - edges gray - edges equalized", images)
+    cl1NlMeanDN = cv2.fastNlMeansDenoising(cl1, dst=True, h=5, searchWindowSize=55)
+    display("denoising", np.concatenate((imgGray, cl1NlMeanDN),axis=1))
 
-    # blurredImages = blurAndDisplay(imgGray, cl1)
-    # display("blured --- gray - equalized - edges gray - edges equalized", blurredImages)
+    images = detectEdgesAndDisplay(imgGray, imgMask, cl1NlMeanDN)
+    display("gray - equalized - edges gray - edges equalized", images)
 
 
 def display(windowName, images):
@@ -39,30 +41,23 @@ def resize(image):
 
 def detectEdgesAndDisplay(imgGray, imgMask, cl1):
     # Canny Edge Detection good values for unedited images th1=75 th2=225
-    cl1Edges = cv2.Canny(image=imgGray, threshold1=40, threshold2=50)
+    cl1Edges = cv2.Canny(image=cl1, threshold1=75, threshold2=225)
 
     cl1Edges = cv2.bitwise_and(cl1Edges, cl1Edges, mask=imgMask)
 
-    cv2.imshow("contours", np.concatenate((imgGray, cl1Edges),axis=1))
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    display("contours", np.concatenate((imgGray, cl1Edges),axis=1))
 
     cl1Edges = cv2.morphologyEx(cl1Edges, cv2.MORPH_CLOSE, kernel=np.ones((2,2), np.uint8))
     cl1Edges = cv2.dilate(cl1Edges, kernel=np.ones((3,3), np.uint8), iterations=1)
     contours, hierachy = cv2.findContours(cl1Edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    contourImage = np.zeros((cl1Edges.shape[0], cl1Edges.shape[1], 3), dtype=np.uint8)
+    contourImage = np.zeros((cl1.shape[0], cl1.shape[1]), dtype=np.uint8)
 
     for i in range(len(contours)):
         if(isContourLine(contours[i])):
             cv2.drawContours(contourImage, contours, i, (255, 255, 255), 2, cv2.LINE_4, hierachy, 0)
 
-
-    cv2.imshow("contours", contourImage)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    return np.concatenate((imgGray, cl1, imgMask, cl1Edges),axis=1)
+    return np.concatenate((imgGray, cl1, contourImage),axis=1)
 
 def isContourLine(contour):
     hull = cv2.convexHull(contour)
@@ -88,5 +83,5 @@ def blurAndDisplay(imgGray, cl1):
 
 
 if __name__ == '__main__':
-    imgFiltering("./res/cutted_images/edited/2019apr04_ecker_sued_10002_5400_bot_blur.png", 
-                 "./res/cutted_images/unedited/2019apr04_ecker_sued_10002_5400_bot_mask.png")
+    imgFiltering("./res/cutted_images/unedited/2019apr04_ecker_sued_10002_16650_bot.png", 
+                 "./res/cutted_images/unedited/2019apr04_ecker_sued_10002_16650_bot_mask.png")
