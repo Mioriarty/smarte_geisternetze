@@ -33,7 +33,7 @@ def build_label_text():
 def start_processing():
     if not isRunning:
         for file in files_selected:
-            foldername = file.split('/')[-1].split('.')[0]
+            foldername = 'application\\' + file.split('/')[-1].split('.')[0]
             os.mkdir(path=foldername)
             slice_name = foldername + '\\' + foldername + '.png'
             xtf_png.xtf2png(file, slice_name, True, True)
