@@ -3,6 +3,7 @@ import os
 from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import Style
+from types import NoneType
 import xtf_png
 from opencv_playground import loopOverImages
 from findingProcessor import processFindings
@@ -39,6 +40,8 @@ def start_processing():
     runningThread.start()
     start_process.configure(state='disabled')
 
+def press_enter(event = None):
+    pass
 
 def processing(start_process_button):
     if not os.path.isdir('application\\out'):
@@ -92,6 +95,7 @@ if __name__ == '__main__':
     start_process = Button(root, text="Find",
                            command=start_processing, bg="green", fg='White', height=2, width=10, state='disabled')
     start_process.grid(column=3, row=1, padx=10, sticky='w')
+    root.bind('<Return>', press_enter)
 
     delete_button = Button(root, text='Delete Selection',
                            comman=delete_selection, bg="red", fg='White', height=2)
