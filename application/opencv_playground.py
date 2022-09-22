@@ -1,6 +1,7 @@
 from concurrent.futures import process
 import glob
 import cv2
+from matplotlib.pyplot import contour
 import numpy as np
 import multiprocessing
 from Finding import Finding
@@ -19,32 +20,49 @@ def loopOverImages(dir):
 
     findings = [finding for finding in findingsBot + findingsTop if finding != None ]
 
+    print(["{} - {}".format(i , finding) for i, finding in enumerate(findings)])
+
     return findings
 
 def imgFiltering(url, maskUrl):
     img = cv2.imread(url)
     imgMask = cv2.imread(maskUrl)
     imgMask = cv2.cvtColor(imgMask, cv2.COLOR_BGR2GRAY)
-    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)    
+    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
 
     clahe = cv2.createCLAHE(clipLimit = 1)
     cl1 = clahe.apply(imgGray)
 
-    imgMask = resize(imgMask)
-    cl1 = resize(cl1)
+    scaleFactor = 0.4
+    imgGray = resize(imgGray, scaleFactor)
+    imgMask = resize(imgMask, scaleFactor)
+    cl1 = resize(cl1, scaleFactor)
 
     cl1NlMeanDN = cv2.fastNlMeansDenoising(cl1, dst=True, h=7, searchWindowSize=55)
 
-    image = detectEdgesAndDisplay(imgMask, cl1NlMeanDN)
+    image, contours = detectEdgesAndDisplay(imgMask, cl1NlMeanDN)
 
-    return getFinding(image, url)
+    finding = getFinding(contours, url, scaleFactor)
 
-def getFinding(image, url):
-    whitePixels = cv2.findNonZero(image)
-    if whitePixels is None:
-        return
+    singlePixel = np.zeros(image.shape)
+
+    if finding != None:
+        cv2.circle(singlePixel, (finding.pixelCoord[0], finding.pixelCoord[1]), 15, 255, 4)
     
-    finding = Finding.fromFileName(whitePixels[0][0], url)
+    display(url[30:], np.concatenate((imgGray, cl1, image, singlePixel), axis=1))
+    print(np.amax(np.concatenate((imgGray, cl1, image), axis=1)))
+
+    return finding
+
+def getFinding(contours, url, scaleFactor):
+    finding = None
+
+    if len(contours) > 0:
+        middle, _ = cv2.minEnclosingCircle(contours[0])
+
+        xCord = int(middle[0] / scaleFactor)
+        yCord = int(middle[1] / scaleFactor)
+        finding = Finding.fromFileName((xCord, yCord), url)
 
     return finding
 
@@ -53,10 +71,9 @@ def display(windowName, images):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def resize(image):
-    scale_percent = 40 # percent of original size
-    width = int(image.shape[1] * scale_percent / 100)
-    height = int(image.shape[0] * scale_percent / 100)
+def resize(image, scaleFactor):
+    width = int(image.shape[1] * scaleFactor)
+    height = int(image.shape[0] * scaleFactor)
     dim = (width, height)
     return cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
 
@@ -74,7 +91,7 @@ def detectEdgesAndDisplay(imgMask, cl1):
         if(isContourLine(contours[i])):
             cv2.drawContours(contourImage, contours, i, (255, 255, 255), 2, cv2.LINE_4, hierachy, 0)
 
-    return contourImage
+    return contourImage, contours
 
 def isContourLine(contour):
     hull = cv2.convexHull(contour)
