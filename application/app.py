@@ -61,18 +61,18 @@ def delete_selection():
 root = Tk()
 root.title('Geisternetz Finder')
 root.geometry("500x250")
-root.resizable(False, False)
-
+root.resizable(False, False) 
+root.configure(background='darkturquoise')
 find_files = Button(root, text="Browse Files", command=browseFiles)
 find_files.grid(column=1, row=1, sticky='w')
 
 start_process = Button(root, text="Analyze",
                        command=start_processing, state='disabled')
-start_process.grid(column=1, row=3)
+start_process.grid(column=3, row=1)
 
 delete_button = Button(root, text='Delete Selection',
-                       command=delete_selection, bg="red")
-delete_button.grid(column=1, row=2)
+                       comman=delete_selection, bg="red")
+delete_button.grid(column=2, row=1)
 
 selected_files_label = Label(root,
                              text="",
