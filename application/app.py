@@ -3,7 +3,6 @@ import os
 from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import Style
-from types import NoneType
 import xtf_png
 from opencv_playground import loopOverImages
 from findingProcessor import processFindings
@@ -85,15 +84,13 @@ if __name__ == '__main__':
     root.geometry("539x360")
     root.resizable(False, False)
     root.configure(background='darkturquoise')
-    bg_img = Image.open('application\\bg.png')
+    bg_img = Image.open('application\\bg.jpg')
     bg = ImageTk.PhotoImage(bg_img)
     label = Label(root, image=bg)
     label.place(x=0, y=0)
     find_files = Button(root, text="Browse Files",
                         command=browseFiles, height=2, bg='#567', fg='White')
     find_files.grid(column=1, row=1, sticky='w', padx=10, pady=10)
-
-    photo = ImageTk.PhotoImage(Image.open('application\\net.png'))
 
     start_process = Button(root, text="Find",
                            command=start_processing, bg="green", fg='White', height=2, width=10, state='disabled')
