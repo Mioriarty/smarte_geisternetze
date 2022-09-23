@@ -1,7 +1,5 @@
-from concurrent.futures import process
 import glob
 import cv2
-from matplotlib.pyplot import contour
 import numpy as np
 import multiprocessing
 from Finding import Finding
