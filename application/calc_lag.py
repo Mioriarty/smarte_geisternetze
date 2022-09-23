@@ -27,8 +27,8 @@ def convert_coords(la,lo,layback,heading,offset):
     Deg_lag = utm.to_latlon(ROT_E, ROT_N, UTM_zone, UTM_letter)
     Deg_lag = np.asarray(Deg_lag)
     Deg_lag = np.array(Deg_lag.tolist())
-    LON_lag = Deg_lag[1]
-    LAT_lag = Deg_lag[0]
+    LON_lag = Deg_lag[0]
+    LAT_lag = Deg_lag[1]
 
 
     return LAT_lag, LON_lag
