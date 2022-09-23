@@ -3,7 +3,6 @@ import os
 from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import Style
-from types import NoneType
 import xtf_png
 from opencv_playground import loopOverImages
 from findingProcessor import processFindings
@@ -85,7 +84,7 @@ if __name__ == '__main__':
     root.geometry("539x360")
     root.resizable(False, False)
     root.configure(background='darkturquoise')
-    bg_img = Image.open('application\\bg.png')
+    bg_img = Image.open('application\\bg.jpg')
     bg = ImageTk.PhotoImage(bg_img)
     label = Label(root, image=bg)
     label.place(x=0, y=0)
