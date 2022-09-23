@@ -6,9 +6,12 @@ import cv2
 import numpy as np
 import imageio
 from Finding import Finding
+from calc_lag import convert_coords
     
 def processFindings(findings, xtfPath, outputDirectory, gifSize = 600):
     (fh, p) = pyxtf.xtf_read(xtfPath)
+
+    laybackPath = 5
 
     # temp whole img
     tempPngFileName = "temp.png"
@@ -38,6 +41,10 @@ def createXMLMarker(ping, chanel_num, name, root_xml, marker_list_xml):
 
     latitude = ping.SensorYcoordinate # CALCS TODO
     longitude = ping.SensorXcoordinate # CALCS TODO
+    heading = ping.Yaw
+    layback = 5
+
+    latitude, longitude = convert_coords(longitude, latitude, )
 
 
     writeMarkerAttribute('Time', (ping.FixTimeHour * 60 +  ping.FixTimeMinute) * 60 + ping.FixTimeSecond, root_xml, marker)
