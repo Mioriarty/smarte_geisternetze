@@ -79,7 +79,8 @@ def processing(start_process_button):
             temp_folder_loc + '/')
         processFindings(findings, file, out_folder_loc)
 
-        marker2shp(out_folder_loc + "/marker.xml", out_folder_loc + "/marker.shp", out_folder_loc + "/marker.xlxs")
+        marker2shp(out_folder_loc + "/marker.xml", out_folder_loc +
+                   "/marker.shp", out_folder_loc + "/marker.xlxs")
     start_process_button.configure(state='normal')
 
 
@@ -93,7 +94,10 @@ def delete_selection():
 
 if __name__ == '__main__':
     root = Tk()
-    root.title('Geisternetz Finder')
+    root.title('Ghostnetbusters')
+    ico = Image.open('ghostnetbusters.jpg')
+    photo = ImageTk.PhotoImage(ico)
+    root.wm_iconphoto(False, photo)
     root.geometry("539x360")
     root.resizable(False, False)
     root.configure(background='darkturquoise')
