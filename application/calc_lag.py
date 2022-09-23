@@ -33,8 +33,5 @@ def convert_coords(la,lo,layback,heading,offset):
     LAT_lag = Deg_lag[0]
 
 
-    return LAT_lag, LON_lag, la, lo
-
-a = convert_coords(45,10,5,55,20)
-print(a)
+    return LAT_lag, LON_lag
     
