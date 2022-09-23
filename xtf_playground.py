@@ -2,7 +2,7 @@ import pyxtf
 import numpy as np
 import matplotlib.pyplot as plt
 
-test_file = 'res\\2019apr04_ecker_sued_10002.xtf'
+test_file = 'res/2019apr04_ecker_sued_10002.xtf'
 (fh, p) = pyxtf.xtf_read(test_file)
 
 print(fh)

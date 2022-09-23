@@ -113,4 +113,4 @@ def slice_image(image, filename, suffix, slice_width):
     
 
 if __name__ == '__main__':
-    xtf2png('res\\2020may29_0001.xtf', 'bla.png', True, False)
+    xtf2png('res/2020may29_0001.xtf', 'bla.png', True, False)

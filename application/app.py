@@ -9,6 +9,7 @@ from findingProcessor import processFindings
 from PIL import ImageTk, Image
 import threading
 import shutil
+from marker2shp import marker2shp
 
 files_selected = []
 runningThread = None
@@ -48,15 +49,15 @@ def press_enter(event=None):
 
 
 def processing(start_process_button):
-    if not os.path.isdir('application\\out'):
-        os.mkdir(path='application\\out')
-    if not os.path.isdir('application\\temp'):
-        os.mkdir(path='application\\temp')
+    if not os.path.isdir('application/out'):
+        os.mkdir(path='application/out')
+    if not os.path.isdir('application/temp'):
+        os.mkdir(path='application/temp')
 
     for file in files_selected:
         foldername = file.split('/')[-1].split('.')[0]
-        out_folder_loc = 'application\\out\\' + foldername
-        temp_folder_loc = 'application\\temp\\' + foldername
+        out_folder_loc = 'application/out/' + foldername
+        temp_folder_loc = 'application/temp/' + foldername
 
         if os.path.isdir(out_folder_loc):
             try:
@@ -71,12 +72,14 @@ def processing(start_process_button):
                 print("Error: %s - %s." % (e.filename, e.strerror))
         os.mkdir(path=temp_folder_loc)
 
-        slice_name = temp_folder_loc + '\\' + foldername + '.png'
+        slice_name = temp_folder_loc + '/' + foldername + '.png'
         xtf_png.xtf2png(file, slice_name, True, True)
 
         findings = loopOverImages(
-            temp_folder_loc + '\\')
+            temp_folder_loc + '/')
         processFindings(findings, file, out_folder_loc)
+
+        marker2shp(out_folder_loc + "/marker.xml", out_folder_loc + "/marker.shp", out_folder_loc + "/marker.xlxs")
     start_process_button.configure(state='normal')
 
 
@@ -94,7 +97,7 @@ if __name__ == '__main__':
     root.geometry("539x360")
     root.resizable(False, False)
     root.configure(background='darkturquoise')
-    bg_img = Image.open('application\\bg.jpg')
+    bg_img = Image.open('application/bg.jpg')
     bg = ImageTk.PhotoImage(bg_img)
     label = Label(root, image=bg)
     label.place(x=0, y=0)

@@ -120,4 +120,4 @@ def writeMarkerAttribute(name, value, root_xml, marker_xml):
     
 
 if __name__ == '__main__':
-    processFindings([Finding((10, 10), 1040, 'bot')], 'res\\2019apr04_ecker_sued_10002.xtf', "xmlout")
+    processFindings([Finding((10, 10), 1040, 'bot')], 'res/2019apr04_ecker_sued_10002.xtf', "xmlout")
