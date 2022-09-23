@@ -72,18 +72,18 @@ def processing(start_process_button, status_label):
         os.mkdir(path=temp_folder_loc)
 
         status_label.grid(column=4, columnspan=4, row=1, padx=10, sticky='e')
-        status_label.configure(text='{}\nReading xtf file and slicing...'.format(foldername))
+        status_label.configure(text='{}\nReading xtf file and slicing... (1/3)'.format(foldername))
 
         slice_name = temp_folder_loc + '/' + foldername + '.png'
         xtf_png.xtf2png(file, slice_name, True, True)
     
-        status_label.configure(text='{}\nFinding anomalies...'.format(foldername))
+        status_label.configure(text='{}\nFinding anomalies... (2/3)'.format(foldername))
 
         findings = loopOverImages(
             temp_folder_loc + '/')
         processFindings(findings, file, out_folder_loc)
 
-        status_label.configure(text='{}\nCreating output files...'.format(foldername))
+        status_label.configure(text='{}\nCreating output files... (3/3)'.format(foldername))
 
         marker2shp(out_folder_loc + "/marker.xml", out_folder_loc +
                    "/marker.shp", out_folder_loc + "/marker.xlsx")
