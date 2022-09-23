@@ -56,10 +56,12 @@ def processing(start_process_button):
         out_folder_loc = 'application\\out\\' + foldername
         temp_folder_loc = 'application\\temp\\' + foldername
 
-        if not os.path.isdir(out_folder_loc):
-            os.mkdir(path=out_folder_loc)
-        if not os.path.isdir(temp_folder_loc):
-            os.mkdir(path=temp_folder_loc)
+        if os.path.isdir(out_folder_loc):
+            os.rmdir(path=out_folder_loc)
+        os.mkdir(path=out_folder_loc)
+        if os.path.isdir(temp_folder_loc):
+            os.rmdir(path=temp_folder_loc)
+        os.mkdir(path=temp_folder_loc)
 
         slice_name = temp_folder_loc + '\\' + foldername + '.png'
         xtf_png.xtf2png(file, slice_name, True, True)
