@@ -92,8 +92,6 @@ if __name__ == '__main__':
                         command=browseFiles, height=2, bg='#567', fg='White')
     find_files.grid(column=1, row=1, sticky='w', padx=10, pady=10)
 
-    photo = ImageTk.PhotoImage(Image.open('application\\net.png'))
-
     start_process = Button(root, text="Find",
                            command=start_processing, bg="green", fg='White', height=2, width=10, state='disabled')
     start_process.grid(column=3, row=1, padx=10, sticky='w')
