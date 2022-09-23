@@ -37,7 +37,7 @@ def build_label_text():
 
 
 def start_processing():
-    runningThread = threading.Thread(target=processing, args=(start_process,))
+    runningThread = threading.Thread(target=processing, args=(start_process, status_label,))
     runningThread.start()
     start_process.configure(state='disabled')
 
@@ -47,7 +47,7 @@ def press_enter(event=None):
         start_processing()
 
 
-def processing(start_process_button):
+def processing(start_process_button, status_label):
     if not os.path.isdir('out'):
         os.mkdir(path='out')
     if not os.path.isdir('temp'):
@@ -71,16 +71,26 @@ def processing(start_process_button):
                 print("Error: %s - %s." % (e.filename, e.strerror))
         os.mkdir(path=temp_folder_loc)
 
+        status_label.grid(column=4, columnspan=4, row=1, padx=10, sticky='e')
+        status_label.configure(text='{}\nReading xtf file and slicing...'.format(foldername))
+
         slice_name = temp_folder_loc + '/' + foldername + '.png'
         xtf_png.xtf2png(file, slice_name, True, True)
+    
+        status_label.configure(text='{}\nFinding anomalies...'.format(foldername))
 
         findings = loopOverImages(
             temp_folder_loc + '/')
         processFindings(findings, file, out_folder_loc)
 
+        status_label.configure(text='{}\nCreating output files...'.format(foldername))
+
         marker2shp(out_folder_loc + "/marker.xml", out_folder_loc +
                    "/marker.shp", out_folder_loc + "/marker.xlsx")
+
     start_process_button.configure(state='normal')
+
+    status_label.configure(text='Done!')
 
 
 def delete_selection():
@@ -126,6 +136,13 @@ if __name__ == '__main__':
                                  justify=CENTER)
     build_label_text()
     selected_files_label.grid(columnspan=3, row=2, padx=10, sticky='w')
+
+    status_label = Label(root,
+                        text="",
+                        width=0, height=4,
+                        fg="blue",
+                        anchor='w',
+                        justify=CENTER)
 
     mainloop()
     # pyinstaller -F --noconsole  app.py
