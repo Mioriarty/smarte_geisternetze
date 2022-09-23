@@ -49,15 +49,15 @@ def press_enter(event=None):
 
 
 def processing(start_process_button):
-    if not os.path.isdir('application/out'):
-        os.mkdir(path='application/out')
-    if not os.path.isdir('application/temp'):
-        os.mkdir(path='application/temp')
+    if not os.path.isdir('out'):
+        os.mkdir(path='out')
+    if not os.path.isdir('temp'):
+        os.mkdir(path='temp')
 
     for file in files_selected:
         foldername = file.split('/')[-1].split('.')[0]
-        out_folder_loc = 'application/out/' + foldername
-        temp_folder_loc = 'application/temp/' + foldername
+        out_folder_loc = 'out/' + foldername
+        temp_folder_loc = 'temp/' + foldername
 
         if os.path.isdir(out_folder_loc):
             try:
@@ -95,13 +95,13 @@ def delete_selection():
 if __name__ == '__main__':
     root = Tk()
     root.title('Ghostnetbusters')
-    ico = Image.open('application/ghostnetbusters.jpg')
+    ico = Image.open('ghostnetbusters.jpg')
     photo = ImageTk.PhotoImage(ico)
     root.wm_iconphoto(False, photo)
     root.geometry("539x360")
     root.resizable(False, False)
     root.configure(background='darkturquoise')
-    bg_img = Image.open('application/bg.jpg')
+    bg_img = Image.open('bg.jpg')
     bg = ImageTk.PhotoImage(bg_img)
     label = Label(root, image=bg)
     label.place(x=0, y=0)
@@ -128,3 +128,4 @@ if __name__ == '__main__':
     selected_files_label.grid(columnspan=3, row=2, padx=10, sticky='w')
 
     mainloop()
+    # pyinstaller -F --noconsole  app.py
