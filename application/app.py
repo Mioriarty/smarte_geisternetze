@@ -1,4 +1,5 @@
 from enum import auto
+import multiprocessing
 import os
 from tkinter import *
 from tkinter import filedialog
@@ -93,6 +94,7 @@ def delete_selection():
 
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
     root = Tk()
     root.title('Ghostnetbusters')
     ico = Image.open('ghostnetbusters.jpg')
