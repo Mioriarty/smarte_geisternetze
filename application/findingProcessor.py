@@ -6,9 +6,46 @@ import cv2
 import numpy as np
 import imageio
 from Finding import Finding
+from calc_lag import convert_coords
+from pathlib import Path
+
+class LaybackRecord:
+
+    def __init__(self, filePath, defaultValue = 10):
+        self.hasFile = filePath.exists()
+        self.defaultValue = defaultValue
+        self.laybackData = []
+
+        if self.hasFile:
+            doc = minidom.parse(str(filePath.absolute()))
+
+            for element in doc.getElementsByTagName('event'):
+                sonarIndex = int(element.getElementsByTagName('sonarindex')[0].firstChild.nodeValue)
+                layback = max([ float(element.getElementsByTagName('x_offset')[0].firstChild.nodeValue), float(element.getElementsByTagName('y_offset')[0].firstChild.nodeValue), float(element.getElementsByTagName('z_offset')[0].firstChild.nodeValue) ])
+                self.laybackData.append((sonarIndex, layback))
+            
     
-def processFindings(findings, xtfPath, outputDirectory, gifSize = 600):
+    def evaluate(self, pingNumber):
+        if self.hasFile:
+            lastDataPoint = 0
+            lastDataPointsLayback = 0
+
+            for (sonarIndex, layback) in self.laybackData:
+                if sonarIndex < pingNumber and sonarIndex > lastDataPoint:
+                    lastDataPoint = sonarIndex
+                    lastDataPointsLayback = layback
+            return lastDataPointsLayback
+                    
+        else:
+            return self.defaultValue
+
+
+
+def processFindings(findings, xtfPath, outputDirectory, gifSize = 300):
     (fh, p) = pyxtf.xtf_read(xtfPath)
+
+    laybackPath = Path(Path(xtfPath).parent.parent, 'layback.xml')
+    laybackRecord = LaybackRecord(laybackPath)
 
     # temp whole img
     tempPngFileName = "temp.png"
@@ -26,25 +63,32 @@ def processFindings(findings, xtfPath, outputDirectory, gifSize = 600):
     for index, finding in enumerate(findings):
         markerName = "Mark" + str(index)
 
-        createXMLMarker(pings[finding.getPingNumber()], finding.chanel, markerName, root, marker_list_xml)
+        createXMLMarker(pings[finding.getPingNumber()], finding, markerName, laybackRecord.evaluate(finding.getPingNumber()), root, marker_list_xml)
         createGif(finding, markerName, outputDirectory,  wholeImg, gifSize)
     
     with open(outputDirectory + "/marker.xml", "w") as f:
         f.write(root.toprettyxml(indent ="\t") )
 
-
-def createXMLMarker(ping, chanel_num, name, root_xml, marker_list_xml):
+def createXMLMarker(ping, finding, name,  layback, root_xml, marker_list_xml):
     marker = root_xml.createElement('Marker')
+
+    range = ping.ping_chan_headers[0].SlantRange
+    chanelWidth = ping.ping_chan_headers[0].NumSamples
+    offset = finding.getGlobalPixelCoord(chanelWidth)[0] - chanelWidth
+    offset = offset / chanelWidth * range
 
     latitude = ping.SensorYcoordinate # CALCS TODO
     longitude = ping.SensorXcoordinate # CALCS TODO
+    heading = ping.Yaw
+
+    latitude, longitude = convert_coords(longitude, latitude, heading, layback, offset)
 
 
     writeMarkerAttribute('Time', (ping.FixTimeHour * 60 +  ping.FixTimeMinute) * 60 + ping.FixTimeSecond, root_xml, marker)
     writeMarkerAttribute('RealTime', datetime(ping.Year, ping.Month, ping.Day, ping.Hour, ping.Minute, ping.Second ).timestamp(), root_xml, marker)
     writeMarkerAttribute('SonarElementIndex', ping.PingNumber, root_xml, marker)
     # writeMarkerAttribute('Range', '', root_xml, marker)
-    writeMarkerAttribute('SonarChannel', chanel_num, root_xml, marker)
+    writeMarkerAttribute('SonarChannel', finding.chanel, root_xml, marker)
     writeMarkerAttribute('Name', name, root_xml, marker)
     writeMarkerAttribute('Description', 'Automatically generated', root_xml, marker)
     writeMarkerAttribute('Filename', name + '.gif', root_xml, marker)

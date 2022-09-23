@@ -51,12 +51,12 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_
 
     if do_cutting:
         print("Create slices...")
-        slice_image(np_chan1, pngPath[:-4], "_top", slice_width, False)
-        slice_image(np_chan2, pngPath[:-4], "_bot", slice_width, False)
+        slice_image(np_chan1, pngPath[:-4], "_top", slice_width)
+        slice_image(np_chan2, pngPath[:-4], "_bot", slice_width)
 
         if do_bottom_detection:
-            slice_image(mask1, pngPath[:-4], "_top_mask", slice_width, False)
-            slice_image(mask2, pngPath[:-4], "_bot_mask", slice_width, False)
+            slice_image(mask1, pngPath[:-4], "_top_mask", slice_width)
+            slice_image(mask2, pngPath[:-4], "_bot_mask", slice_width)
         
 
 
@@ -80,50 +80,37 @@ def detect_bottom(values, threshhold, safety_offset):
     value_length = len(values)
     recheck_jump = int(value_length * 0.1)
 
-    for i in range(int(value_length * 0.2), value_length):
+    for i in range(int(value_length * 0.2), int(value_length * 0.98)):
         if values[i] < threshhold:
             if i + recheck_jump >= value_length or values[i + recheck_jump] < threshhold:
                 if i + 2*recheck_jump >= value_length or values[i + 2*recheck_jump] < threshhold:
                     return max(i - safety_offset, 0)
 
         
-    return value_length
+    return 0
 
 def detect_bottom_reversed(values, threshhold, safety_offset):
     value_length = len(values)
     recheck_jump = int(value_length * 0.1)
 
 
-    for i in range(int(value_length * 0.8), 0, -1):
+    for i in range(int(value_length * 0.8), int(value_length * 0.02), -1):
         if values[i] < threshhold:
             if i - recheck_jump < 0 or values[i - recheck_jump] < threshhold:
                 if i - 2*recheck_jump < 0 or values[i - 2*recheck_jump] < threshhold:
                     return min(i + safety_offset, value_length - 1)
 
-    return 0
+    return value_length
 
 
-def slice_image(image, filename, suffix, slice_width, discard_check):
+def slice_image(image, filename, suffix, slice_width):
     for i in range(image.shape[1] // slice_width):
         slice = image[:,i*slice_width:(i+1)*slice_width]
         this_filename = filename + "_" + str(i * slice_width) + suffix + ".png"
         
-        if not discard_check or not should_discard_slice(slice):
-            cv2.imwrite(this_filename, slice)
+        cv2.imwrite(this_filename, slice)
 
-def should_discard_slice(slice):
-    nonzero = slice[slice != 0]
-
-    # to much black (more than 75%)
-    if nonzero.size < slice.size * 0.25:
-        return True
-    
-    # no black at all (cannot be real data, bottom missing)
-    if nonzero.size > slice.size * 0.96:
-        return True
-    
-    return False
     
 
 if __name__ == '__main__':
-    xtf2png('res\\2019apr04_ecker_sued_10002.xtf', 'res\\cutted_images\\unedited\\2019apr04_ecker_sued_10002.png', True, True)
+    xtf2png('res\\2020may29_0001.xtf', 'bla.png', True, False)
