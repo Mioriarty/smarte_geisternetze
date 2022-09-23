@@ -22,7 +22,7 @@ def loopOverImages(dir):
     findingsBot = sum(findingsBot, [])
     findings = [finding for finding in findingsBot + findingsTop if finding != None ]
 
-    print(["{} - {}".format(i , finding) for i, finding in enumerate(findings)])
+    # print(["{} - {}".format(i , finding) for i, finding in enumerate(findings)])
 
     return findings
 
@@ -48,11 +48,13 @@ def imgFiltering(url, maskUrl):
 
     singlePixel = np.zeros(image.shape, dtype=np.uint8)
 
-    for finding in findings:
-        cv2.circle(singlePixel, (int(finding.pixelCoord[0] * scaleFactor), int(finding.pixelCoord[1] * scaleFactor)), 15, 255, 4)
-    
-    if len(findings) > 0: 
-        display(str(findings[0].pixelCoord) + url[30:], np.concatenate((imgGray, cl1, image, singlePixel), axis=1))
+    for finding in findings:        
+        if finding.pixelCoord[0] == 10 and finding.pixelCoord[1] == 423:
+            cv2.circle(singlePixel, (int(finding.pixelCoord[1] * scaleFactor), int(finding.pixelCoord[0] * scaleFactor)), 15, 255, 4)
+            display(str(findings[0].pixelCoord) + url[30:], np.concatenate((imgGray, cl1, image, singlePixel), axis=1))
+
+    # if len(findings) > 0: 
+    #     display(str(findings[0].pixelCoord) + url[30:], np.concatenate((imgGray, cl1, image, singlePixel), axis=1))
 
     return findings
 
@@ -64,7 +66,7 @@ def getFinding(contours, url, scaleFactor):
 
         xCord = int(middle[0] / scaleFactor)
         yCord = int(middle[1] / scaleFactor)
-        findings.append(Finding.fromFileName((xCord, yCord), url))
+        findings.append(Finding.fromFileName((yCord, xCord), url))
 
     return findings
 
