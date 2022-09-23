@@ -8,6 +8,8 @@ from opencv_playground import loopOverImages
 from findingProcessor import processFindings
 from PIL import ImageTk, Image
 import threading
+import shutil
+
 files_selected = []
 runningThread = None
 
@@ -57,10 +59,16 @@ def processing(start_process_button):
         temp_folder_loc = 'application\\temp\\' + foldername
 
         if os.path.isdir(out_folder_loc):
-            os.rmdir(path=out_folder_loc)
+            try:
+                shutil.rmtree(out_folder_loc)
+            except OSError as e:
+                print("Error: %s - %s." % (e.filename, e.strerror))
         os.mkdir(path=out_folder_loc)
         if os.path.isdir(temp_folder_loc):
-            os.rmdir(path=temp_folder_loc)
+            try:
+                shutil.rmtree(temp_folder_loc)
+            except OSError as e:
+                print("Error: %s - %s." % (e.filename, e.strerror))
         os.mkdir(path=temp_folder_loc)
 
         slice_name = temp_folder_loc + '\\' + foldername + '.png'
