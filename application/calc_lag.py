@@ -19,9 +19,7 @@ def convert_coords(la,lo,layback,heading,offset):
     DIFF = np.array([DIFF_E, DIFF_N])
     rot_mat = np.matrix([[0,1],[-1,0]])
     ROT = np.dot(rot_mat,DIFF)
-    print(ROT)
     ROT = ROT/np.linalg.norm(ROT)*offset
-    print(ROT[0,0])
 
     ROT_E = EAST_lag + ROT[0,0]
     ROT_N = NORTH_lag + ROT[0,1]
@@ -33,8 +31,5 @@ def convert_coords(la,lo,layback,heading,offset):
     LAT_lag = Deg_lag[0]
 
 
-    return LAT_lag, LON_lag, la, lo
-
-a = convert_coords(45,10,5,55,20)
-print(a)
+    return LAT_lag, LON_lag
     
