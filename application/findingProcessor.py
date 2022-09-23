@@ -41,7 +41,7 @@ class LaybackRecord:
 
 
 
-def processFindings(findings, xtfPath, outputDirectory, gifSize = 600):
+def processFindings(findings, xtfPath, outputDirectory, gifSize = 300):
     (fh, p) = pyxtf.xtf_read(xtfPath)
 
     laybackPath = Path(Path(xtfPath).parent.parent, 'layback.xml')
