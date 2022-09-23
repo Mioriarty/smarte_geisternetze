@@ -62,10 +62,15 @@ def getFinding(contours, url, scaleFactor):
     findings = []
 
     for contour in contours:
-        middle, _ = cv2.minEnclosingCircle(contour)
+        hullArea = cv2.contourArea(cv2.convexHull(contour))
 
+        if hullArea < 200:
+            continue
+
+        middle, _ = cv2.minEnclosingCircle(contour)
         xCord = int(middle[0] / scaleFactor)
         yCord = int(middle[1] / scaleFactor)
+        
         findings.append(Finding.fromFileName((yCord, xCord), url))
 
     return findings
@@ -95,7 +100,19 @@ def detectEdgesAndDisplay(imgMask, cl1):
         if(isContourLine(contours[i])):
             cv2.drawContours(contourImage, contours, i, (255, 255, 255), 2, cv2.LINE_4, hierachy, 0)
 
-    return contourImage, [c for c in contours if isContourLine(c)]
+    contourProximityAggregated = [contour[0]]
+    for contour in contours:
+        mid, _ = cv2.minEnclosingCircle(contour)
+
+        contourProximityAggregated.append([contour for c in contours if c != contours and distance(mid, c) < 100])
+
+
+    return contourImage, contourProximityAggregated
+
+def distance(mid1, contour):
+    mid2, _ = cv2.minEnclosingCircle(contour)
+
+    return int(np.sqrt((mid2[0] - mid1[0])**2 + (mid2[1] - mid1[1])**2))
 
 def isContourLine(contour):
     hull = cv2.convexHull(contour)
