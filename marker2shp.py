@@ -62,10 +62,11 @@ df = gpd.GeoDataFrame(df, geometry='geometry')
 # set coordinate system
 gdf = df.set_crs(4326, allow_override=True)
 #print(gdf.crs)
+geo_df = gdf.to_crs({'init': 'epsg:32633'})
+ 
 
 # write to shapefile
 gdf.to_file('/Volumes/RAKSHA/ORCC/SH/20190404ecker sued 1/marker.shp', driver='ESRI Shapefile')
-
-geo_df = gdf.to_crs({'init': 'epsg:32633'})
+gdf.to_excel('/Volumes/RAKSHA/ORCC/SH/20190404ecker sued 1/marker.xlsx')
 
 #print(geo_df)
