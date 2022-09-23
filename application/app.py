@@ -1,9 +1,7 @@
-from enum import auto
 import multiprocessing
 import os
 from tkinter import *
 from tkinter import filedialog
-from tkinter.ttk import Style
 import xtf_png
 from opencv_playground import loopOverImages
 from findingProcessor import processFindings

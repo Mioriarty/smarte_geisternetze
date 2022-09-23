@@ -5,8 +5,6 @@ import multiprocessing
 from Finding import Finding
 
 def loopOverImages(dir):
-    print(dir)
-
     processes = 8
     sonarTopImgs = glob.glob("{}*top.png".format(dir))
     sonarBotImgs = glob.glob("{}*bot.png".format(dir))
@@ -40,16 +38,9 @@ def imgFiltering(url, maskUrl):
 
     cl1NlMeanDN = cv2.fastNlMeansDenoising(cl1, dst=True, h=7, searchWindowSize=55)
 
-    image, contours = detectEdgesAndDisplay(imgMask, cl1NlMeanDN)
+    contours = detectEdgesAndDisplay(imgMask, cl1NlMeanDN)
 
     findings = getFinding(contours, url, scaleFactor)
-
-    singlePixel = np.zeros(image.shape, dtype=np.uint8)
-
-    for finding in findings:        
-        if finding.pixelCoord[0] == 10 and finding.pixelCoord[1] == 423:
-            cv2.circle(singlePixel, (int(finding.pixelCoord[1] * scaleFactor), int(finding.pixelCoord[0] * scaleFactor)), 15, 255, 4)
-            display(str(findings[0].pixelCoord) + url[30:], np.concatenate((imgGray, cl1, image, singlePixel), axis=1))
 
     # if len(findings) > 0: 
     #     display(str(findings[0].pixelCoord) + url[30:], np.concatenate((imgGray, cl1, image, singlePixel), axis=1))
@@ -92,11 +83,11 @@ def detectEdgesAndDisplay(imgMask, cl1):
     cl1Edges = cv2.dilate(cl1Edges, kernel=np.ones((3,3), np.uint8), iterations=1)
     contours, hierachy = cv2.findContours(cl1Edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    contourImage = np.zeros((cl1.shape[0], cl1.shape[1]), dtype=np.uint8)
+    # contourImage = np.zeros((cl1.shape[0], cl1.shape[1]), dtype=np.uint8)
 
-    for i in range(len(contours)):
-        if(isContourLine(contours[i])):
-            cv2.drawContours(contourImage, contours, i, (255, 255, 255), 2, cv2.LINE_4, hierachy, 0)
+    # for i in range(len(contours)):
+    #     if(isContourLine(contours[i])):
+    #         cv2.drawContours(contourImage, contours, i, (255, 255, 255), 2, cv2.LINE_4, hierachy, 0)
 
     contours = [c for c in contours if isContourLine(c)]
 
@@ -106,7 +97,7 @@ def detectEdgesAndDisplay(imgMask, cl1):
         i+=1
 
 
-    return contourImage, contours
+    return contours
 
 def distance(mid1, mid2):
     return int(np.sqrt((mid2[0] - mid1[0])**2 + (mid2[1] - mid1[1])**2))

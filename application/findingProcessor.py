@@ -3,7 +3,6 @@ from xml.dom import minidom
 from datetime import datetime
 from xtf_png import xtf2png
 import cv2
-import numpy as np
 import imageio
 from Finding import Finding
 from calc_lag import convert_coords
@@ -48,7 +47,7 @@ def processFindings(findings, xtfPath, outputDirectory, gifSize = 300):
     laybackRecord = LaybackRecord(laybackPath)
 
     # temp whole img
-    tempPngFileName = "temp.png"
+    tempPngFileName = "temp/temp.png"
     xtf2png(xtfPath, tempPngFileName, False, False)
     wholeImg = cv2.imread(tempPngFileName, cv2.IMREAD_GRAYSCALE)
     
