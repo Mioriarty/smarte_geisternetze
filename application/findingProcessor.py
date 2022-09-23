@@ -75,7 +75,6 @@ def createGif(finding, markerName, outputDirectory, wholeImg, size):
 
     imageio.imwrite(outputDirectory + "/" + markerName + '.gif', gifData)
 
-
 def writeMarkerAttribute(name, value, root_xml, marker_xml):
     attr = root_xml.createElement(name)
     val = root_xml.createTextNode(str(value))
