@@ -80,7 +80,7 @@ def processing(start_process_button):
         processFindings(findings, file, out_folder_loc)
 
         marker2shp(out_folder_loc + "/marker.xml", out_folder_loc +
-                   "/marker.shp", out_folder_loc + "/marker.xlxs")
+                   "/marker.shp", out_folder_loc + "/marker.xlsx")
     start_process_button.configure(state='normal')
 
 
@@ -95,7 +95,7 @@ def delete_selection():
 if __name__ == '__main__':
     root = Tk()
     root.title('Ghostnetbusters')
-    ico = Image.open('ghostnetbusters.jpg')
+    ico = Image.open('application/ghostnetbusters.jpg')
     photo = ImageTk.PhotoImage(ico)
     root.wm_iconphoto(False, photo)
     root.geometry("539x360")

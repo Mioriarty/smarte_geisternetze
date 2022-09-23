@@ -1,6 +1,6 @@
 import xml.dom.minidom
 import numpy as np
-import geopandas as gpd
+# import geopandas as gpd
 import shapely as shp
 from shapely.geometry import Point
 import pandas as pd
@@ -46,8 +46,6 @@ def marker2shp(markerFile, shpFile, excelFile):
     CHANNEL = [ np.append(CHANNEL,int(el.firstChild.nodeValue)) for el in Channel]
     DESC = [ np.append(DESC,el.firstChild.nodeValue) for el in Desc]
 
-    print(Lon)
-
     df = np.c_[NAME,LON,LAT,TIME,PING,FILE,CHANNEL,DESC]
     df = pd.DataFrame(df)
 
@@ -57,17 +55,19 @@ def marker2shp(markerFile, shpFile, excelFile):
     # combine lat and lon column to a shapely Point() object
     df['geometry'] = df.apply(lambda x: Point((float(x.Long), float(x.Lati))), axis=1)
 
+
     # convert to geo DF
-    df = gpd.GeoDataFrame(df, geometry='geometry')
+    # df = gpd.GeoDataFrame(df, geometry='geometry')
 
     # set coordinate system
-    gdf = df.set_crs(4326, allow_override=True)
+    # gdf = df.set_crs(4326, allow_override=True)
     #print(gdf.crs)
-    geo_df = gdf.to_crs({'init': 'epsg:32633'})
+    # geo_df = gdf.to_crs({'init': 'epsg:32633'})
     
 
     # write to shapefile
-    gdf.to_file(shpFile, driver='ESRI Shapefile')
-    gdf.to_excel(excelFile)
+    # gdf.to_file(shpFile, driver='ESRI Shapefile')
+    df.to_excel(excelFile)
+    df.to_csv(shpFile[:-4] + ".csv")
 
     #print(geo_df)
