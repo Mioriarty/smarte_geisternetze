@@ -100,11 +100,14 @@ def detectEdgesAndDisplay(imgMask, cl1):
         if(isContourLine(contours[i])):
             cv2.drawContours(contourImage, contours, i, (255, 255, 255), 2, cv2.LINE_4, hierachy, 0)
 
-    contourProximityAggregated = [contours[0]]
+    contourProximityAggregated = []
     for contour in contours:
         mid, _ = cv2.minEnclosingCircle(contour)
 
-        contourProximityAggregated.append([contour for c in contours if c != contours and distance(mid, c) < 100])
+        if len(contourProximityAggregated) == 0:
+            contourProximityAggregated.append(contours[0])
+
+        contourProximityAggregated += [contour for c in contours if distance(mid, c) < 100]
 
 
     return contourImage, contourProximityAggregated
