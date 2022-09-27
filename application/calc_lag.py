@@ -24,7 +24,7 @@ def convert_coords(la,lo,layback,heading,offset):
     rot_mat = np.matrix([[0,1],[-1,0]])
     ROT = np.dot(rot_mat,DIFF)
 
-    # normalise rotated DIFF vector 
+    # normalise rotated DIFF vector and multiply with offset portion in x-direction
     ROT = ROT/np.linalg.norm(ROT)*offset
 
     ROT_E = EAST_lag + ROT[0,0]
@@ -37,8 +37,5 @@ def convert_coords(la,lo,layback,heading,offset):
     LAT_lag = Deg_lag[1]
 
 
-    return LAT_lag, LON_lag, ROT_E
-
-a = convert_coords(54.23,9.78,10,30,3)
-print(a)
+    return LAT_lag, LON_lag
     
