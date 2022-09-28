@@ -2,8 +2,11 @@ import utm
 import math
 import numpy as np
 
+# layback: distance between ship & sonar 
+# offset: x-offset of feature in png slice
 def convert_coords(la,lo,layback,heading,offset):
 
+    # convert lon/lat degree to metre (Universal Transverse Mercator)
     UTM = utm.from_latlon(la, lo)
     UTM = np.asarray(UTM)
     EAST = np.float(UTM[0])
@@ -11,6 +14,7 @@ def convert_coords(la,lo,layback,heading,offset):
     UTM_zone = np.int(UTM[2])
     UTM_letter = UTM[3]
 
+    # take x,y components of layback and add it to East & North component
     EAST_lag = np.float(EAST - layback*math.sin(heading))
     NORTH_lag = np.float(NORTH - layback*math.cos(heading))
 
@@ -30,6 +34,7 @@ def convert_coords(la,lo,layback,heading,offset):
     ROT_E = EAST_lag + ROT[0,0]
     ROT_N = NORTH_lag + ROT[0,1]
 
+    # convert in baack to lon/lat
     Deg_lag = utm.to_latlon(ROT_E, ROT_N, UTM_zone, UTM_letter)
     Deg_lag = np.asarray(Deg_lag)
     Deg_lag = np.array(Deg_lag.tolist())
