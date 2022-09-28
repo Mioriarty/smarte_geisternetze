@@ -57,8 +57,6 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_
         if do_bottom_detection:
             slice_image(mask1, pngPath[:-4], "_top_mask", slice_width)
             slice_image(mask2, pngPath[:-4], "_bot_mask", slice_width)
-        
-
 
     else:
         print("Create image...")
