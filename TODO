@@ -1,0 +1,10 @@
+- delete everything except the application folder
+- make branch geopandas the main one
+- add licence file
+- fill readme file
+- dependencies file
+- change background image (not free to use)
+- rework ui with pyQT (qt designer)
+- check 110% coordinate calculations
+- check ith other files => make a ratio (how many are missed)
+- voting system for images - optional
