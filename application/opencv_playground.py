@@ -5,6 +5,8 @@ import numpy as np
 import multiprocessing
 from Finding import Finding
 
+# get all image slice and mask paths, run filters and detection on all slices with multiprocessing,
+# aggregate findings 
 def loopOverImages(dir):
     processes = 8
     sonarTopImgs = glob.glob("{}*top.png".format(dir))
