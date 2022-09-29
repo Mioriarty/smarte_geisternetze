@@ -2,7 +2,7 @@ import multiprocessing
 import os
 from tkinter import *
 from tkinter import filedialog
-import xtf_png
+import xtf2png
 from opencv_playground import loopOverImages
 from findingProcessor import processFindings
 from PIL import ImageTk, Image
@@ -91,7 +91,7 @@ def processing(start_process_button, status_label):
 
         # calls funtion that does the slicing of .xtf into .png
         slice_name = temp_folder_loc + '/' + foldername + '.png'
-        xtf_png.xtf2png(file, slice_name, True, True)
+        xtf2png.xtf2png(file, slice_name, True, True)
     
         # display text status
         status_label.configure(text='{}\nFinding anomalies... (2/3)'.format(foldername))
