@@ -2,6 +2,7 @@ from openpyxl import Workbook
 from openpyxl.drawing.image import Image
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
+from natsort import natsorted
 import glob
 import os
 import xml.dom.minidom
@@ -55,9 +56,8 @@ def marker2csv(markerFile, csvFile, excelFile, dirname):
 
     # images list
     images = []
-    for filename in sorted(glob.glob("./{}*.gif".format(dirname))):
+    for filename in natsorted(glob.glob("./{}/*.gif".format(dirname))):
         images.append(filename)
-        print(filename)
 
     # resize cells
     for row, im in enumerate(images):
@@ -70,7 +70,6 @@ def marker2csv(markerFile, csvFile, excelFile, dirname):
     # insert images
     for index, image in enumerate(images):
         worksheet.add_image(Image(image), anchor='J'+str(index+3))
-        #print(index,image)
 
 
     # insert df
@@ -82,7 +81,7 @@ def marker2csv(markerFile, csvFile, excelFile, dirname):
 
     # titles list
     titles = []
-    for title in sorted(glob.glob("./{}*.gif".format(dirname))):
+    for title in natsorted(glob.glob("./{}/*.gif".format(dirname))):
         titles.append(os.path.basename(title))
 
 
