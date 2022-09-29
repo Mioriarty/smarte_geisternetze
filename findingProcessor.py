@@ -1,7 +1,7 @@
 import pyxtf
 from xml.dom import minidom
 from datetime import datetime
-from xtf_png import xtf2png
+from xtf2png import xtf2png
 import cv2
 import imageio
 from Finding import Finding
