@@ -4,17 +4,14 @@ from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 import glob
 import os
-from natsort import natsorted
 import xml.dom.minidom
 import numpy as np
-import shapely as shp
-from shapely.geometry import Point
 import pandas as pd
 import utm
 import math
 
 
-def marker2csv(markerFile, shpFile, excelFile, dirname):
+def marker2csv(markerFile, csvFile, excelFile, dirname):
     file = xml.dom.minidom.parse(markerFile)
     #print(file.nodeName)
     #print(file.firstChild.tagName)
@@ -58,7 +55,7 @@ def marker2csv(markerFile, shpFile, excelFile, dirname):
 
     # images list
     images = []
-    for filename in natsorted(glob.glob("{}*.gif".format(dirname))):
+    for filename in sorted(glob.glob("{}*.gif".format(dirname))):
         images.append(filename)
         print(filename)
 
@@ -85,12 +82,10 @@ def marker2csv(markerFile, shpFile, excelFile, dirname):
 
     # titles list
     titles = []
-    for title in natsorted(glob.glob("{}*.gif".format(dirname))):
+    for title in sorted(glob.glob("{}*.gif".format(dirname))):
         titles.append(os.path.basename(title))
 
 
     # save workbook
     workbook.save(dirname + '.xlsx')
-
-a = marker2csv('application/out/2019apr04_ecker_sued_10001/marker.xml', 'application/out/2019apr04_ecker_sued_10001/marker.csv', 'application/out/2019apr04_ecker_sued_10001/marker.xls', 'application/out/2019apr04_ecker_sued_10001/')
 
