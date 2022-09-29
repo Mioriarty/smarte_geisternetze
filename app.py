@@ -8,7 +8,7 @@ from findingProcessor import processFindings
 from PIL import ImageTk, Image
 import threading
 import shutil
-from marker2shp import marker2shp
+from marker2csv import marker2csv
 
 # selected xtf file names will be populated into this array
 files_selected = []
@@ -105,8 +105,8 @@ def processing(start_process_button, status_label):
         processFindings(findings, file, out_folder_loc)
 
         # convert/export xml markers to excel
-        marker2shp(out_folder_loc + "/marker.xml", out_folder_loc +
-                   "/marker.shp", out_folder_loc + "/marker.xlsx")
+        marker2csv(out_folder_loc + "/marker.xml", out_folder_loc +
+                   "/marker.shp", out_folder_loc + "/marker.xlsx", out_folder_loc)
 
     # put button/s to state normal again, display 'Done' msg
     start_process_button.configure(state='normal')
