@@ -55,7 +55,7 @@ def marker2csv(markerFile, csvFile, excelFile, dirname):
 
     # images list
     images = []
-    for filename in sorted(glob.glob("{}*.gif".format(dirname))):
+    for filename in sorted(glob.glob("./{}*.gif".format(dirname))):
         images.append(filename)
         print(filename)
 
@@ -82,7 +82,7 @@ def marker2csv(markerFile, csvFile, excelFile, dirname):
 
     # titles list
     titles = []
-    for title in sorted(glob.glob("{}*.gif".format(dirname))):
+    for title in sorted(glob.glob("./{}*.gif".format(dirname))):
         titles.append(os.path.basename(title))
 
 
