@@ -15,13 +15,11 @@ def loopOverImages(dir):
     print("Starting filtering...")
     with multiprocessing.Pool(processes = processes) as pool:
             findingsTop = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarTopImgs ])
-            findingsBot = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarBotImgs ])  
+            findingsBot = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarBotImgs ])
 
     findingsTop = sum(findingsTop, [])
     findingsBot = sum(findingsBot, [])
-    findings = [finding for finding in findingsBot + findingsTop if finding != None ]
-
-    # print(["{} - {}".format(i , finding) for i, finding in enumerate(findings)])
+    findings = [ finding for finding in findingsBot + findingsTop if finding != None ]
 
     return findings
 
