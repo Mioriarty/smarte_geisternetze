@@ -21,8 +21,6 @@ def loopOverImages(dir):
     findingsBot = sum(findingsBot, [])
     findings = [finding for finding in findingsBot + findingsTop if finding != None ]
 
-    # print(["{} - {}".format(i , finding) for i, finding in enumerate(findings)])
-
     return findings
 
 # read image slice and mask, convert them to grayscale, apply histogram equalization, resize the images
