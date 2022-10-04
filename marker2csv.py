@@ -62,7 +62,7 @@ def marker2csv(markerFile, csvFile, excelFile, dirname):
     # resize cells
     for row, im in enumerate(images):
         for col in range(10,11):
-            worksheet.row_dimensions[row].height = 300
+            worksheet.row_dimensions[row+3].height = 300
             col_letter = get_column_letter(col)
             worksheet.column_dimensions[col_letter].width = 50
 
