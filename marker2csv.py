@@ -87,6 +87,6 @@ def marker2csv(markerFile, csvFile, excelFile, dirname):
 
     # save workbook
     workbook.save(dirname + '.xlsx')
-    df.to_csv(dirname + '.csv')
+    df.to_csv(dirname + '.csv', header=['name', 'Lon', 'Lat', 'Time', 'PingNr', 'file', 'channel', 'Description'])
 
 
