@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import cv2
 from pyxtf import xtf_read, concatenate_channel, XTFHeaderType
 
+# reads a xtf file and converts it to a png. It can also slice up the image and create a mask representing the bottom
 def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_threshhold = 3.1, bottom_detection_safety_offset = 30, processes = 8, slice_width = 450 ):
     # Read file header and packets
     print("Reading xtf data...")
@@ -41,9 +42,11 @@ def xtf2png(xtfPath, pngPath, do_bottom_detection, do_cutting, bottom_detection_
 
         # write the sizes to mask files
         print("Write bottom to mask...")
+        # fill image white
         mask1 = np.full(np_chan1.shape, 255)
         mask2 = np.full(np_chan2.shape, 255)
         for i in range(np_chan1.shape[1]):
+            # add black parts where the bottom is
             mask1[bottom_pos1[i]:,i] = np.zeros(np_chan1.shape[0] - bottom_pos1[i])
             mask2[:bottom_pos2[i],i] = np.zeros(bottom_pos2[i])
 
@@ -79,6 +82,9 @@ def blur(values):
     return [values[0], values[1]] + [ int((values[i-2] + values[i-1] + values[i] + values[i+1] + values[i+2]) / 5) for i in range(2, len(values)-2)] + [values[-2], values[-1]]
 
 # detects how large the bottom is in a pixel row by a threshhold
+# 1. from the top, finds the first pixel that falls under the threshhold
+# 2. than jumps twice further down and check if they are also under the threshhold (rejeck jump) so it doesnt detect darc shaddows
+# 3. adds a constant savety offset to make the detected bottom a slightly bit thicker 
 def detect_bottom(values, threshhold, safety_offset):
     value_length = len(values)
     # after a pixel blow the threshhold it will jump by this amount to check if this is alsoe below that threshold. This will happen twice
@@ -88,6 +94,7 @@ def detect_bottom(values, threshhold, safety_offset):
         if values[i] < threshhold:
             if i + recheck_jump >= value_length or values[i + recheck_jump] < threshhold:
                 if i + 2*recheck_jump >= value_length or values[i + 2*recheck_jump] < threshhold:
+                    # make bottom just a slightly bit thicker for safety
                     return max(i - safety_offset, 0)
 
     # return maximum value if nohting was found

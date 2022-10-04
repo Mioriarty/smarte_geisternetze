@@ -24,5 +24,4 @@ class Finding:
             return (self.pixelCoord[0] + chanelWidth, self.getPingNumber())
     
     def __str__(self):
-        globalCoord = self.getGlobalPixelCoord(1000000000)
-        return "({}, {}) => ({}, {}) in {}_{}".format(self.pixelCoord[0], self.pixelCoord[1], globalCoord[0], globalCoord[1], self.imgNumber, self.chanel)
+        return "Finding(({}, {}) in image {} {})".format(self.pixelCoord[0], self.pixelCoord[1], self.imgNumber, "top" if self.chanel == 1 else "bottom")

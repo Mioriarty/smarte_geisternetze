@@ -28,3 +28,4 @@ WWF questions
 - We will improve the algorithm in the course 
 - further requirements can be implemented
 - swipe/accept/reject idea
+- dont calculate minEnclosingCircle and convexHull multiple times
