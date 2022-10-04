@@ -7,4 +7,25 @@
 - check 110% coordinate calculations
 - check ith other files => make a ratio (how many are missed)
 - voting system for images - optional
+
+(from Mia)
+- larger gifs
+- bottom detection?
+- range correction einfügen?
+- top/bottom -> port/strbrd?
+- median filter for blur in bottom detection
+- resizing assess again?
+- circular shape filter reassess
+- filter by feature sizes? -> in get_findings?
+- csv file?
+-------------
+WWF questions
+- objections against continue working on the code?
+- use data within uni course?
+- When do you want to use it?
+- How?
+- We will verify
+- We will improve the algorithm in the course 
+- further requirements can be implemented
+- swipe/accept/reject idea
 - dont calculate minEnclosingCircle and convexHull multiple times

@@ -17,6 +17,7 @@ def loopOverImages(dir):
             findingsTop = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarTopImgs ])
             findingsBot = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarBotImgs ])
 
+    # TODO find another way to flatten and append the lists
     findingsTop = sum(findingsTop, [])
     findingsBot = sum(findingsBot, [])
     findings = [ finding for finding in findingsBot + findingsTop if finding != None ]
@@ -35,14 +36,12 @@ def imgFiltering(url, maskUrl):
     cl1 = clahe.apply(imgGray)
 
     scaleFactor = 0.4
-    imgGray = resize(imgGray, scaleFactor)
+    # imgGray = resize(imgGray, scaleFactor)
     imgMask = resize(imgMask, scaleFactor)
     cl1 = resize(cl1, scaleFactor)
 
     cl1NlMeanDN = cv2.fastNlMeansDenoising(cl1, dst=True, h=7, searchWindowSize=55)
-
     contours = detectEdgesAndDisplay(imgMask, cl1NlMeanDN)
-
     findings = getFinding(contours, url, scaleFactor)
 
     return findings
@@ -58,6 +57,8 @@ def getFinding(contours, url, scaleFactor):
             continue
 
         middle, _ = cv2.minEnclosingCircle(contour)
+        
+        # applying scale factor to counter the coordinate changes by scaling again
         xCord = int(middle[0] / scaleFactor)
         yCord = int(middle[1] / scaleFactor)
         
@@ -84,14 +85,17 @@ def detectEdgesAndDisplay(imgMask, cl1):
     # Canny Edge Detection good values for unedited images th1=75 th2=225
     cl1Edges = cv2.Canny(image=cl1, threshold1=75, threshold2=225)
     cl1Edges = cv2.bitwise_and(cl1Edges, cl1Edges, mask=imgMask)
+    # closing regions of the image which are encapsulated by the detected lines
     cl1Edges = cv2.morphologyEx(cl1Edges, cv2.MORPH_CLOSE, kernel=np.ones((2,2), np.uint8))
+    # add pixels to the contour size
     cl1Edges = cv2.dilate(cl1Edges, kernel=np.ones((3,3), np.uint8), iterations=1)
-    contours, _ = cv2.findContours(cl1Edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+    contours, _ = cv2.findContours(cl1Edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     contours = [c for c in contours if isContourLine(c)]
 
+    # looping over all contours and only include one contour for all contours in a certain range
     i = 0
-    while i < len(contours)-1:  
+    while i < len(contours)-1:
         contours = contours[:i+1] + [ c for c in contours[i+1:] if distance(cv2.minEnclosingCircle(c)[0], cv2.minEnclosingCircle(contours[i])[0]) > 100]
         i+=1
 
@@ -99,7 +103,6 @@ def detectEdgesAndDisplay(imgMask, cl1):
 
 # calculating the distance between two points
 def distance(mid1, mid2):
-    # return int(np.sqrt((mid2[0] - mid1[0])**2 + (mid2[1] - mid1[1])**2))
     return math.dist(mid2, mid1)
 
 # check if contour satisfies circuference/area * radius condition
@@ -110,6 +113,3 @@ def isContourLine(contour):
     coefficient = cv2.arcLength(hull, True)/cv2.contourArea(hull) * radius
 
     return coefficient > 4.2
-
-if __name__ == '__main__':
-    print(len(loopOverImages("./res/cutted_images/unedited/")))
