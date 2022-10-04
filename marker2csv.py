@@ -87,6 +87,6 @@ def marker2csv(markerFile, csvFile, excelFile, dirname):
 
     # save workbook
     workbook.save(dirname + '.xlsx')
-    workbook.save(dirname + '.csv')
+    df.to_csv(dirname + '.csv')
 
 
