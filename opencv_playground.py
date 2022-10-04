@@ -40,9 +40,7 @@ def imgFiltering(url, maskUrl):
     cl1 = resize(cl1, scaleFactor)
 
     cl1NlMeanDN = cv2.fastNlMeansDenoising(cl1, dst=True, h=7, searchWindowSize=55)
-
     contours = detectEdgesAndDisplay(imgMask, cl1NlMeanDN)
-
     findings = getFinding(contours, url, scaleFactor)
 
     return findings
@@ -90,8 +88,9 @@ def detectEdgesAndDisplay(imgMask, cl1):
 
     contours = [c for c in contours if isContourLine(c)]
 
+    # looping over all contours and only include one contour for all contours in a certain range
     i = 0
-    while i < len(contours)-1:  
+    while i < len(contours)-1:
         contours = contours[:i+1] + [ c for c in contours[i+1:] if distance(cv2.minEnclosingCircle(c)[0], cv2.minEnclosingCircle(contours[i])[0]) > 100]
         i+=1
 
@@ -99,7 +98,6 @@ def detectEdgesAndDisplay(imgMask, cl1):
 
 # calculating the distance between two points
 def distance(mid1, mid2):
-    # return int(np.sqrt((mid2[0] - mid1[0])**2 + (mid2[1] - mid1[1])**2))
     return math.dist(mid2, mid1)
 
 # check if contour satisfies circuference/area * radius condition
@@ -110,6 +108,3 @@ def isContourLine(contour):
     coefficient = cv2.arcLength(hull, True)/cv2.contourArea(hull) * radius
 
     return coefficient > 4.2
-
-if __name__ == '__main__':
-    print(len(loopOverImages("./res/cutted_images/unedited/")))
