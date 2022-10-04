@@ -17,6 +17,7 @@ def loopOverImages(dir):
             findingsTop = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarTopImgs ])
             findingsBot = pool.starmap(imgFiltering, [ (sonarImage, glob.glob("{}_mask.png".format(sonarImage[: - 4]))[0]) for sonarImage in sonarBotImgs ])
 
+    # TODO find another way to flatten and append the lists
     findingsTop = sum(findingsTop, [])
     findingsBot = sum(findingsBot, [])
     findings = [ finding for finding in findingsBot + findingsTop if finding != None ]
@@ -35,7 +36,7 @@ def imgFiltering(url, maskUrl):
     cl1 = clahe.apply(imgGray)
 
     scaleFactor = 0.4
-    imgGray = resize(imgGray, scaleFactor)
+    # imgGray = resize(imgGray, scaleFactor)
     imgMask = resize(imgMask, scaleFactor)
     cl1 = resize(cl1, scaleFactor)
 
@@ -56,6 +57,8 @@ def getFinding(contours, url, scaleFactor):
             continue
 
         middle, _ = cv2.minEnclosingCircle(contour)
+        
+        # applying scale factor to counter the coordinate changes by scaling again
         xCord = int(middle[0] / scaleFactor)
         yCord = int(middle[1] / scaleFactor)
         
@@ -82,10 +85,12 @@ def detectEdgesAndDisplay(imgMask, cl1):
     # Canny Edge Detection good values for unedited images th1=75 th2=225
     cl1Edges = cv2.Canny(image=cl1, threshold1=75, threshold2=225)
     cl1Edges = cv2.bitwise_and(cl1Edges, cl1Edges, mask=imgMask)
+    # closing regions of the image which are encapsulated by the detected lines
     cl1Edges = cv2.morphologyEx(cl1Edges, cv2.MORPH_CLOSE, kernel=np.ones((2,2), np.uint8))
+    # add pixels to the contour size
     cl1Edges = cv2.dilate(cl1Edges, kernel=np.ones((3,3), np.uint8), iterations=1)
-    contours, _ = cv2.findContours(cl1Edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+    contours, _ = cv2.findContours(cl1Edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     contours = [c for c in contours if isContourLine(c)]
 
     # looping over all contours and only include one contour for all contours in a certain range
